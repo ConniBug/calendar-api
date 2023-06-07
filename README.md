@@ -1,4 +1,4 @@
-# TranquilityServerAPI
+# GCal Server API
 
 Backend API For GCal Clone,
 <br>
