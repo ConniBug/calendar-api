@@ -1,0 +1,34 @@
+{
+  "name": "calander-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js testing",
+    "release": "node index.js release",
+    "dev": "nodemon index.js dev",
+    "setup": "npm i"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ConniBug/calander-api.git"
+  },
+  "author": "Conni!~#4121",
+  "license": "AGPL-3.0 ",
+  "bugs": {
+    "url": "https://github.com/ConniBug/calander-api/issues"
+  },
+  "homepage": "https://github.com/ConniBug/calander-api#readme",
+  "dependencies": {
+    "@connibug/js-logging": "^2.0.1",
+    "bcrypt": "^5.0.1",
+    "colors": "^1.4.0",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mathjs": "^11.8.0",
+    "mongoose": "^6.1.5",
+    "nodemon": "^2.0.13",
+    "snowflakey": "^0.2.0"
+  }
+}
