@@ -144,7 +144,7 @@ function getDateTime() {
   );
 }
 
-if (config.monitoring.outputStats || 1) {
+if (process.env.MONITOR_OUTPUT_STATS) {
   setInterval(function () {
     console.log(
       "------------------------------------------------------------------------------------"

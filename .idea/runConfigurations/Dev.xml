@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Dev" type="NodeJSConfigurationType" path-to-node="node" node-parameters="index.js" working-dir="$PROJECT_DIR$">
+    <log_file alias="$PROJECT_DIR$/logs/*" path="$PROJECT_DIR$/logs/*" show_all="true" />
+    <method v="2" />
+  </configuration>
+</component>

@@ -3,7 +3,7 @@
  * callers.
  */
 
-const logging = require("@connibug/js-logging");
+const l = require("@connibug/js-logging");
 const monitoring = require("../monitor");
 const mongoose = require("mongoose");
 const Members = mongoose.connection.model("Members");
@@ -33,25 +33,24 @@ module.exports.getAllMembers = async () => {
  */
 module.exports.createNewMember = async (username, email, password) => {
   if (debugMemberFuncs)
-    logging.debug(`Request to create user with username < ${username} >`);
+    l.debug(`Request to create user with username < ${username} > and email < ${email} >`);
 
   var check = await Members.find({
     $or: [{ email: email }, { username: username }],
-  })[0];
+  }); check = check[0];
   if (check) {
-    if (debugMemberFuncs) 
-      logging.debug(`Existing data found:  ${JSON.stringify(check)}`);
+    l.debug(`Existing user found:  ${JSON.stringify(check)}`);
     
     if (check.email == email || check.username == username) {
       if (check.email == email && check.username == username) {
-        if (debugMemberFuncs) logging.debug("Email and username are matching.");
+        if (debugMemberFuncs) l.debug("Email and username are matching.");
         return "email and username exists";
       } else {
         if (check.email == email) {
-          if (debugMemberFuncs) logging.debug("email is matching.");
+          if (debugMemberFuncs) l.debug("email is matching.");
           return "email exists";
         } else if (check.username == username) {
-          if (debugMemberFuncs) logging.debug("username is matching.");
+          if (debugMemberFuncs) l.debug("username is matching.");
           return "username exists";
         }
       }
@@ -60,21 +59,21 @@ module.exports.createNewMember = async (username, email, password) => {
 
   var hashedPassword = hashing.hash(password);
   if (debugMemberFuncs) 
-    logging.debug("hashed password: " + hashedPassword);
+    l.debug("hashed password: " + hashedPassword);
 
-  var buildJson = {
-    id: SnowflakeFnc(),
+  let id = SnowflakeFnc();
+  let tmp_NewMember = new Members({
+    id: id,
     username: username,
     hash: hashedPassword,
     email: email,
-  };
-  let tmp_NewMember = new Members(buildJson);
+  });
 
   await tmp_NewMember.save();
 
-  if (debugMemberFuncs)
-    logging.debug("New account created with id: " + buildJson.id);
-  return { id: buildJson.id };
+  l.debug("New account created with id: " + id);
+
+  return { id: id };
 };
 
 /**
@@ -85,18 +84,18 @@ module.exports.createNewMember = async (username, email, password) => {
 module.exports.deleteMember = async (MemberID) => {
   var response = await Members.find({ id: MemberID }).catch((error) => {
     res.send(err);
-    logging.log(err, "ERROR", "deleteMember");
+    l.log(err, "ERROR", "deleteMember");
     throw "err";
   });
 
   if (!response || response[0] == undefined || response == []) {
-    logging.log(`[ ${null} ] - Tried to delete a member that doesnt exist.`);
+    l.log(`[ ${null} ] - Tried to delete a member that doesnt exist.`);
     throw "Tried to delete a member that doesnt exist.";
   }
 
   var deleteResponse = await Members.deleteOne({ id: MemberID }).catch(
     (error) => {
-      logging.log(error, "ERROR", `deleteOne(${{ id: MemberID }})`);
+      l.log(error, "ERROR", `deleteOne(${{ id: MemberID }})`);
       throw "err";
     }
   );
