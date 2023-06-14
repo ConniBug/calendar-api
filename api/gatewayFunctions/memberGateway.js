@@ -1,17 +1,13 @@
 "use strict";
 const mongoose = require("mongoose");
-const servers = require("./../../Databases/DBs").getServers();
 
 const Members = mongoose.connection.model("Members");
+const memberFunctions = require("../../Utils/functions/memberFunctions");
 
 const codes = require("../../Utils/misc/error_codes").codes;
 
-const memberFunctions = require("../../Utils/functions/memberFunctions");
-
 const l = require("@connibug/js-logging");
 const monitoring = require("../../Utils/monitor");
-
-const formattingData = require("./../../Utils/functions/dataHandler");
 
 async function getMemberRecord(memberID) {
   var member = await Members.find({ id: memberID }).catch((err) => {

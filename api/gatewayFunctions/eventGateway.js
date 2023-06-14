@@ -1,6 +1,5 @@
 "use strict";
 const mongoose = require("mongoose");
-
 const CBucket = mongoose.connection.model("CalanderBucket");
 
 const codes = require("../../Utils/misc/error_codes").codes;
@@ -9,8 +8,6 @@ const eventFunctions = require("../../Utils/functions/eventFunctions");
 
 const l = require("@connibug/js-logging");
 const monitoring = require("../../Utils/monitor");
-
-const formattingData = require("./../../Utils/functions/dataHandler");
 
 async function getEventRecord(eventID) {
   var member = await CBucket.find({ id: eventID }).catch((err) => {

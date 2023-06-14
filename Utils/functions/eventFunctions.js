@@ -1,11 +1,8 @@
-const servers = require("./../../Databases/DBs").getServers();
-
 const mongoose = require("mongoose");
 const CBucket = mongoose.connection.model("CalanderBucket");
 
 const guildSnowflake = require("../snowflake").GenerateID;
 const logging = require("@connibug/js-logging");
-const limits = require("./limits");
 
 /**
  * Creates a new event in a calander

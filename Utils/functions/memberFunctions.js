@@ -3,8 +3,6 @@
  * callers.
  */
 
-const servers = require("./../../Databases/DBs").getServers();
-
 const logging = require("@connibug/js-logging");
 const monitoring = require("../monitor");
 const mongoose = require("mongoose");

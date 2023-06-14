@@ -6,7 +6,7 @@ const l = require("@connibug/js-logging");
 const snowflakey = require("snowflakey");
 // Create the worker instance
 const Worker = new snowflakey.Worker({
-  name: "TESTING",
+  name: "DEV_MACHINE",
   epoch: 1617278400,
   workerId: process.env.CLUSTER_ID || 1,
   processId: process.pid || undefined,
@@ -16,7 +16,7 @@ const Worker = new snowflakey.Worker({
 });
 
 /**
- * Generate a unique snowflake for use in any way seen fit.
+ * Generate a unique snowflake.
  * @returns {string} Unique snowflake
  */
 module.exports.GenerateID = (log = true) => {

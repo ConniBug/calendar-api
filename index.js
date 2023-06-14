@@ -22,19 +22,14 @@ async function start() {
   l.log("--------------------------------------------------");
   l.log("Starting.");
   l.log("--------------------------------------------------");
-  require("./Databases/DBs").initDBs();
-  const servers = await require("./Databases/DBs").get();
 
-  // console.log("=========================");
-  // console.log("Servers");
-  // servers.forEach((e) => {
-  //   var ServerName = Object.keys(e)[0];
-  //   console.log("|", ServerName, "- Databases:", undefined);
-  // });
-  // console.log("=========================");
+  mongoose.connect(process.env.mongodb_main, function(err) {
+    if (err)
+      console.error(err);
+  });
+  mongoose.connection.on('connected', r => {l.debug("Connected to main db.")});
 
   require("./api/models/MemberModel"); // created model loading here
-  // require("./api/models/GuildModel"); // created model loading here
   require("./api/models/CalanderBucketModel"); // created model loading here
 
   let tmp = mongoose.modelNames();
