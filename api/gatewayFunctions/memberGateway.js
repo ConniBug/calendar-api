@@ -10,7 +10,7 @@ const l = require("@connibug/js-logging");
 const monitoring = require("../../Utils/monitor");
 
 async function getMemberRecord(memberID) {
-  var member = await Members.find({ id: memberID }).catch((err) => {
+  let member = await Members.find({ id: memberID }).catch((err) => {
     if (err) {
       console.log(err);
       l.log("getMemberRecord had an error", "ERROR");
@@ -20,7 +20,8 @@ async function getMemberRecord(memberID) {
 }
 
 exports.getMemberInfo = async (memberID) => {
-  return await getMemberRecord(memberID);
+  let members = await getMemberRecord(memberID);
+  return members[0];
 };
 
 /**
@@ -76,13 +77,16 @@ exports.createNewMember = async (req, res) => {
 };
 
 exports.getMemberRecord = async (req, res) => {
-  var MemberID = req.params.MemberID;
+  let MemberID = req.params.MemberID;
 
-  var member = await getMemberRecord(MemberID);
+  let member = await getMemberRecord(MemberID);
   member = member[0];
 
+  // res.json(
+  //   formattingData.formatMemberData(member, formattingData.dataFormats.USER)
+  // );
   res.json(
-    formattingData.formatMemberData(member, formattingData.dataFormats.USER)
+    member
   );
 };
 

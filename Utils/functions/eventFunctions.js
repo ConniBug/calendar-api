@@ -10,37 +10,35 @@ const logging = require("@connibug/js-logging");
  * @param {string} calanderID
  * @param {string} title
  * @param {string} description
- * @param {string} start_date
- * @param {string} end_date
+ * @param {string} start
+ * @param {string} end
+ * @param {string} location
  * @returns {string} Status text.
  */
-module.exports.newEvent = async (OwnerID, calanderID, title, description, start_date, end_date) => {
+module.exports.newEvent = async (OwnerID, calanderID,
+                                 title, description, start, end, location) => {
   var builtJSON = {
     id: guildSnowflake(false),
-    title: title,
-    description: description,
+    title: title || "No title",
+    description: description || "No event description",
     authorID: OwnerID,
-    eventStart: start_date,
-    eventEnd: end_date,
-    calanderID: calanderID
+    eventStart: start,
+    eventEnd: end,
+    calanderID: calanderID,
+    location: location || "No location",
   };
   if(!OwnerID)
     throw "Missing OwnerID";
-  if(!title)
-    throw "Missing title";
-  if(!description)
-    throw "Missing description";
 
   // console.log("Recieved message:", builtJSON);
 
   let tmp_NewEvent = new CBucket(builtJSON);
 
-  var res = await tmp_NewEvent.save();
+  let res = await tmp_NewEvent.save();
   if(res == null) {
       throw "Failed to submit event record"
   }
-
-  return builtJSON;
+  return res.id;
 };
 
 

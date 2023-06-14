@@ -53,7 +53,7 @@ exports.getEvents = async (req, res) => {
   var duration = end - startTimestamp;
 
   var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-  l.log(`[ ${duration}ms ] - [ ${ip} ] - List members`);
+  l.log(`[ ${duration}ms ] - [ ${ip} ] - Get events`);
 
   monitoring.log(
       "getEvents - gateway",
@@ -68,8 +68,12 @@ exports.createNewEvent = async (req, res) => {
   var calanderID = req.params.CalanderID;
 
   var response = await eventFunctions
-    .newEvent(memberID, calanderID, req.body.title,
-        req.body.description, req.body.stat_date, req.body.end_date)
+    .newEvent(memberID, calanderID,
+        req.body.title,
+        req.body.description,
+        req.body.start,
+        req.body.end,
+        req.body.location)
     .catch((err) => {
       console.log("ERR: ", err);
       res.status(codes.Bad_Request);

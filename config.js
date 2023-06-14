@@ -1,6 +1,5 @@
 exports.conf = {
   monitoring: {
-    outputStats: false, // Default: true
     outputStatsEvery: 10000, // Currently: 10seconds // Default: 1000 ms
   },
 };

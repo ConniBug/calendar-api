@@ -17,7 +17,7 @@ const Snowflake = require("../../Utils/snowflake").GenerateID;
   location_x: geo_y
   location_y: geo_x
   location_address: address
-  location_name: Plain text if above not available
+  location: Plain text if above not available
 
   allDay: true/false
 
@@ -30,7 +30,7 @@ const CalanderBucketSchema = new Schema({
     title: { type: String, required: "Need title"},
     description: { type: String, required: "Need description"},
     authorID: { type: String, required: "authorID needed" },
-    calanderID: { type: String, required: "calander id needed" },
+    calanderID: { type: String, required: "calendar id needed" },
 
     eventStart: { type: Date },
     eventEnd: { type: Date },
@@ -38,7 +38,7 @@ const CalanderBucketSchema = new Schema({
     repeating: { type: String },
     timeframe: { type: String },
 
-    location_name: { type: String },
+    location: { type: String },
 
     allDay: { type: Boolean },
 
