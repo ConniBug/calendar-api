@@ -134,7 +134,9 @@ module.exports.memberLogin = async (body) => {
     );
 
     const secret = crypto.randomBytes(256).toString("hex");
-    const token = TokenFunc.createToken(response.id, secret);
+    let res = TokenFunc.createToken(response.id, secret);
+    let token = res[0];
+    let expiry = res[1];
     response.tokenSecret = secret;
 
     startTimestamp = new Date().getTime();
@@ -146,7 +148,7 @@ module.exports.memberLogin = async (body) => {
       new Date().getTime() - startTimestamp
     );
 
-    return { id: response.id, token: token };
+    return { id: response.id, token: token, expiry: parseInt(new Date().getTime() * 0.001) + parseInt(expiry) };
   } else {
     return "Un-Authenticated";
   }
