@@ -20,7 +20,7 @@ module.exports = (app) => {
 
   app
       .route("/api/member/login")
-      .get(memberGateway.login);
+      .post(memberGateway.login);
 
   //#endregion
 

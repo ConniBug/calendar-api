@@ -8,7 +8,7 @@ l.setupFileLogging("./");
 const express = require("express");
 var cors = require('cors');
 var corsOptions = {
-  origin: 'https://cal.transgirl.space/',
+  origin: '*',
 };
 
 const app = express();
