@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const monitoring = require("./Utils/monitor");
 const hashing = require("./Utils/hashing");
 
+const ical = require("./Utils/functions/icalFunctions");
+
 const path = require("path");
 const l = require("@connibug/js-logging");
 l.setupFileLogging("./");

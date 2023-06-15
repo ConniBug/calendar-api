@@ -29,7 +29,10 @@
     "jsonwebtoken": "9.0.0",
     "mathjs": "^11.8.0",
     "mongoose": "^6.1.5",
+    "node-ical": "^0.16.0",
     "nodemon": "^2.0.13",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6",
     "snowflakey": "^0.2.0"
   }
 }
