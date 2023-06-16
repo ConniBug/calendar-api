@@ -1,46 +1,93 @@
 const mongoose = require("mongoose");
-// const CBucket = mongoose.connection.model("CalanderBucket");
+const ical = mongoose.connection.model("ICal");
+const ICAL = require('node-ical');
+
+
 //
 // const guildSnowflake = require("../snowflake").GenerateID;
-const logging = require("@connibug/js-logging");
+const l = require("@connibug/js-logging");
+const eventFunctions = require("../functions/eventFunctions");
+const memberFunctions = require("../functions/memberFunctions");
+
+const SnowflakeFnc = require("../snowflake").GenerateID;
 
 let rp = require('request-promise');
+
 async function get_ical_from_url(url) {
     console.log("Downloading");
     return await rp(url)
         .then(function (string) {
-            logging.log("ICal Download success at url " + url)
+            l.log("ICal Download success at url " + url)
             return string;
         })
         .catch(function (err) {
-            logging.error("ICal Download Failed at url " + url);
-            logging.error(err);
+            l.error("ICal Download Failed at url " + url);
+            l.error(err);
         });
 }
 
-module.exports.ical_test = async () => {
-    let ical = require('node-ical');
+
+/**
+ * Create a new ical subscription within ical table.
+ * @param memberID
+ * @param url
+ */
+module.exports.createNewIcal = async (memberID, url) => {
+
+    l.debug(`Request to create new calander with : ${memberID} : ${url}`);
 
     let file = await get_ical_from_url("https://kent-fix.transgirl.space/?kent_id=192178");
 
-    ical.parseICS(file, function(err, data) {
-        if (err) logging.error(err);
+    let res_2 = await ICAL.parseICS(file, async function(err, data) {
+        if (err) l.error(err);
         // console.log(data);
+        let calander_info  = data["vcalendar"];
+
+        let new_cal_name = calander_info["WR-CALNAME"];
+        let new_cal_colour = "blue";
+        let calanderID = (await memberFunctions.createNewCalander(memberID, new_cal_name, new_cal_colour, false)).calanderID;
+
+        l.debug("New calander created with id: " + calanderID);
+
+        let icalID = SnowflakeFnc();
+        let tmp_NewIcal = new ical({
+            id: icalID,
+            ownerID: memberID,
+            url: url,
+            calanderID: calanderID,
+        });
+        let res = await tmp_NewIcal.save();
+        if(!res) {
+            l.error("Failed to save new ical record");
+            return { error: "Failed to save new ical record" };
+        }
+        l.debug("New ical record created with id: " + icalID);
+
+        l.log("Creating events from ical file");
 
         for (let key in data){
             let en = data[key];
-            console.log(key);
-            console.log("- " + en.organizer.params.CN);
-            console.log("- " + en.start);
-            console.log("- " + en.end);
-            console.log("- " + en.summary);
-            console.log("- " + en.location);
-            console.log("- " + en.description);
-        }
+            if(en.type !== "VEVENT") {
+                l.warning("Not a vevent. Is a " + en.type);
+                console.log(en);
+                continue;
+            }
+            // let should_be_cal_name = en.organizer.params.CN + " - " + calander_info["WR-CALNAME"];
 
-        data.forEach(ent => {
-           console.log(ent);
-        });
+            let event = {
+                title: en.summary,
+                description: en.description,
+                authorID: memberID,
+                eventStart: en.start,
+                eventEnd: en.end,
+                calanderID: calanderID,
+            };
+            let newEV = await eventFunctions.newEvent(
+                event.authorID, event.calanderID,
+                event.title, event.description,
+                event.eventStart, event.eventEnd, event.location
+            );
+        }
+        return { id: icalID };
     });
 }
-this.ical_test();

@@ -18,17 +18,59 @@ require("dotenv").config();
 const debugMemberFuncs = process.env.debug && true;
 
 /**
+ * create a new calander within user account.
+ * @param memberID
+ * @param name
+ * @param colour
+ * @param editable
+ * @returns {string} status text. Ok/Failed/Already Exists
+ */
+module.exports.createNewCalander = async (memberID, name, colour, editable) => {
+  if (debugMemberFuncs) {
+    l.debug(`Request to create new calander with : ${memberID} : ${name} : ${colour} : ${editable}`);
+  }
+
+  let calID = SnowflakeFnc();
+
+  let doc = await Members.find({ id: memberID }).clone().exec();
+
+  if (!doc[0]) {
+    l.error("Member not found " + memberID);
+    return { status: "Member not found" };
+  } doc = doc[0];
+  console.log(doc);
+  doc.calanders.push({
+    id: calID,
+    name: name,
+    colour: colour,
+    editable: editable,
+  });
+  console.log(doc);
+
+  let res = await doc.save();
+  if(!res) {
+    l.error("Failed to save calander");
+    return { status: "Failed to save calander" };
+  }
+  if (debugMemberFuncs)
+    l.debug("New calander created with id: " + calID);
+
+  return { calanderID: calID };
+}
+
+/**
  * Get a list of all members within database.
  * @returns {Array} List of members/status text.
  */
 module.exports.getAllMembers = async () => {
-  var memberArray = await Members.find({});
-  return memberArray;
+  return await Members.find({});
 };
 
 /**
  * Create a new member
- * @param {json} body res.body from http request.
+ * @param username
+ * @param email
+ * @param password
  * @returns {string} status text. Ok/Failed/Already Exists
  */
 module.exports.createNewMember = async (username, email, password) => {
@@ -40,16 +82,16 @@ module.exports.createNewMember = async (username, email, password) => {
   }); check = check[0];
   if (check) {
     l.debug(`Existing user found:  ${JSON.stringify(check)}`);
-    
-    if (check.email == email || check.username == username) {
-      if (check.email == email && check.username == username) {
+
+    if (check.email === email || check.username === username) {
+      if (check.email === email && check.username === username) {
         if (debugMemberFuncs) l.debug("Email and username are matching.");
         return "email and username exists";
       } else {
-        if (check.email == email) {
+        if (check.email === email) {
           if (debugMemberFuncs) l.debug("email is matching.");
           return "email exists";
-        } else if (check.username == username) {
+        } else if (check.username === username) {
           if (debugMemberFuncs) l.debug("username is matching.");
           return "username exists";
         }
@@ -78,7 +120,7 @@ module.exports.createNewMember = async (username, email, password) => {
 
 /**
  * Delete a member based off the member id
- * @param {json} body res.body from http request.
+ * @param MemberID
  * @returns {string} status text. Ok/Failed/Already Exists
  */
 module.exports.deleteMember = async (MemberID) => {
@@ -113,7 +155,7 @@ module.exports.deleteMember = async (MemberID) => {
 module.exports.memberLogin = async (body) => {
   let startTimestamp = new Date().getTime();
 
-  var response = (await Members.find({ email: body.email }))[0];
+  let response = (await Members.find({ email: body.email }))[0];
 
   // monitoring.log(
   //     "memberLogin - find user from email",
@@ -122,7 +164,7 @@ module.exports.memberLogin = async (body) => {
 
   if (!response) return "Un-Authenticated";
 
-  var checkHashAgainstPassword = BCrypt.compareSync(
+  let checkHashAgainstPassword = BCrypt.compareSync(
     body.password,
     response.hash
   );
@@ -153,3 +195,4 @@ module.exports.memberLogin = async (body) => {
     return "Un-Authenticated";
   }
 };
+

@@ -17,14 +17,15 @@ const logging = require("@connibug/js-logging");
  */
 module.exports.newEvent = async (OwnerID, calanderID,
                                  title, description, start, end, location) => {
-  var builtJSON = {
+  let builtJSON = {
     id: guildSnowflake(false),
     title: title || "No title",
     description: description || "No event description",
     authorID: OwnerID,
     eventStart: start,
     eventEnd: end,
-    calanderID: calanderID,
+    calanderID: "default",
+    // calanderID: calanderID,
     location: location || "No location",
   };
   if(!OwnerID)
@@ -38,7 +39,7 @@ module.exports.newEvent = async (OwnerID, calanderID,
   if(res == null) {
       throw "Failed to submit event record"
   }
-  return res.id;
+  return await res.id;
 };
 
 

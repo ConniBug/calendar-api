@@ -1,4 +1,22 @@
+// Setup environment
+require("dotenv").config();
+process.env.debug = process.env.debug === "True" ? "true" : "false";
+
+const port = process.env.PORT || 3000;
+
+// Setup MongoDB
 const mongoose = require("mongoose");
+mongoose.set('strictQuery', true);
+mongoose.connect(process.env.mongodb_main, function(err) {
+  if (err)
+    console.error(err);
+});
+
+// Load MongoDB Models
+require("./api/models/MemberModel");
+require("./api/models/CalanderBucketModel");
+require("./api/models/IcalModel");
+
 const monitoring = require("./Utils/monitor");
 const hashing = require("./Utils/hashing");
 
@@ -15,11 +33,6 @@ var corsOptions = {
 
 const app = express();
 
-require("dotenv").config();
-process.env.debug = process.env.debug === "True" ? "true" : "false";
-
-const port = process.env.PORT || 3000;
-
 if(!process.env.SALT_ROUNDS)
   hashing.setup();
 // monitoring.output();
@@ -28,12 +41,6 @@ async function start() {
   l.log("--------------------------------------------------");
   l.log("Starting.");
   l.log("--------------------------------------------------");
-
-  mongoose.set('strictQuery', true);
-  mongoose.connect(process.env.mongodb_main, function(err) {
-    if (err)
-      console.error(err);
-  });
 
   function event_logger(events) {
     events.forEach(event => {
@@ -53,9 +60,6 @@ async function start() {
     {name: 'all', message: "All servers in replica set have connected."},
     {name: 'reconnectFailed', message: "Server has run out of connection tries."},
   ]);
-
-  require("./api/models/MemberModel"); // created model loading here
-  require("./api/models/CalanderBucketModel"); // created model loading here
 
   let tmp = mongoose.modelNames();
   l.verbose("Defined models " + tmp);
