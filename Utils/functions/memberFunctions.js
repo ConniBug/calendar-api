@@ -155,44 +155,49 @@ module.exports.deleteMember = async (MemberID) => {
 module.exports.memberLogin = async (body) => {
   let startTimestamp = new Date().getTime();
 
-  let response = (await Members.find({ email: body.email }))[0];
+  let email = body.email;
+  let password = body.password;
+  let refresh = body.refresh === "true";
+  if (refresh)
+    console.log("Refresh token request");
+
+  let response = (await Members.find({email: email}))[0];
+  if (!response)
+    return "Un-Authenticated";
+
+  let tokenSecret = response.tokenSecret;
 
   // monitoring.log(
   //     "memberLogin - find user from email",
   //     new Date().getTime() - startTimestamp
   // );
 
-  if (!response) return "Un-Authenticated";
-
-  let checkHashAgainstPassword = BCrypt.compareSync(
-    body.password,
-    response.hash
+  let valid_password = BCrypt.compareSync(
+      password,
+      response.hash
   );
+  if (!valid_password)
+    return "Un-Authenticated";
 
-  if (checkHashAgainstPassword) {
-    monitoring.log(
+  monitoring.log(
       "memberLogin - BCrypt.compareSync",
       new Date().getTime() - startTimestamp
-    );
+  );
 
-    const secret = crypto.randomBytes(256).toString("hex");
-    let res = TokenFunc.createToken(response.id, secret);
-    let token = res[0];
-    let expiry = res[1];
-    response.tokenSecret = secret;
+  const secret = refresh ? crypto.randomBytes(256).toString("hex") : tokenSecret;
+  let [token, expiry] = TokenFunc.createToken(response.id, secret);
 
-    startTimestamp = new Date().getTime();
-    await Members.findOneAndUpdate({ id: response.id }, response, {
-      new: true,
-    });
-    monitoring.log(
+  response.tokenSecret = secret;
+
+  startTimestamp = new Date().getTime();
+  await Members.findOneAndUpdate({id: response.id}, response, {
+    new: true,
+  });
+  monitoring.log(
       "memberLogin - update db with new tokenSecret",
       new Date().getTime() - startTimestamp
-    );
+  );
 
-    return { id: response.id, token: token, expiry: parseInt(new Date().getTime() * 0.001) + parseInt(expiry) };
-  } else {
-    return "Un-Authenticated";
-  }
+  return {id: response.id, token: token, expiry: parseInt(new Date().getTime() * 0.001) + parseInt(expiry)};
 };
 
