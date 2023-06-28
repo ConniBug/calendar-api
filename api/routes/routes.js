@@ -1,4 +1,7 @@
 "use strict";
+const {authWrapper} = require("../proxys/authProxy");
+const memberGateway = require("../gatewayFunctions/memberGateway");
+const eventGateway = require("../gatewayFunctions/eventGateway");
 module.exports = (app) => {
   const memberGateway = require("../gatewayFunctions/memberGateway");
   const authenticationGateway = require("../gatewayFunctions/authGateway");
@@ -40,6 +43,10 @@ module.exports = (app) => {
     .get(authWrapper, memberGateway.getMemberRecord)
     .put(authWrapper, memberGateway.updateMember)
     .delete(authWrapper, memberGateway.deleteMember);
+  app
+    .route("/api/member/:MemberID/calander")
+    .post(authWrapper, memberGateway.createNewCalander)
+    .delete(authWrapper, memberGateway.deleteCalander);
   //#endregion
 
   /**
@@ -50,9 +57,12 @@ module.exports = (app) => {
   app
       .route("/api/member/:MemberID/calander/:CalanderID")
       .post(authWrapper, eventGateway.createNewEvent)
-      .get(authWrapper, eventGateway.getEvents)
-      .delete(authWrapper, eventGateway.deleteEvent);
+      .get(authWrapper, eventGateway.getEvents);
 
+  app
+      .route("/api/:MemberID/:CalanderID/:EventID")
+      .put(authWrapper, eventGateway.updateEvent)
+      .delete(authWrapper, eventGateway.deleteEvent);
   //#endregion
 
   /**

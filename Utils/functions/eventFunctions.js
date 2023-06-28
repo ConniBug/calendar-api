@@ -4,6 +4,22 @@ const CBucket = mongoose.connection.model("CalanderBucket");
 const guildSnowflake = require("../snowflake").GenerateID;
 const logging = require("@connibug/js-logging");
 
+
+/**
+ * Update event with new information
+ * @param {string} eventID
+ * @param {object} update
+ * @returns {string} Status text.
+ */
+module.exports.updateEvent = async (eventID, update) => {
+
+  let doc = await CBucket.findOneAndUpdate({ id: eventID }, update);
+  if(!doc) {
+      throw "Failed to update event";
+  }
+  return await doc;
+}
+
 /**
  * Creates a new event in a calander
  * @param {string} OwnerID
@@ -17,23 +33,22 @@ const logging = require("@connibug/js-logging");
  */
 module.exports.newEvent = async (OwnerID, calanderID,
                                  title, description, start, end, location) => {
-  let builtJSON = {
+  logging.log(`Creating new event with: ${OwnerID} : ${calanderID} : ${title} : ${description} : ${start} : ${end} : ${location}`);
+
+  if(!OwnerID || !calanderID || !start || !end) {
+    throw "Missing required fields";
+  }
+
+  let tmp_NewEvent = new CBucket({
     id: guildSnowflake(false),
     title: title || "No title",
     description: description || "No event description",
     authorID: OwnerID,
     eventStart: start,
     eventEnd: end,
-    calanderID: "default",
-    // calanderID: calanderID,
+    calanderID: calanderID,
     location: location || "No location",
-  };
-  if(!OwnerID)
-    throw "Missing OwnerID";
-
-  // console.log("Recieved message:", builtJSON);
-
-  let tmp_NewEvent = new CBucket(builtJSON);
+  });
 
   let res = await tmp_NewEvent.save();
   if(res == null) {

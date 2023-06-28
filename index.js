@@ -27,9 +27,14 @@ const l = require("@connibug/js-logging");
 l.setupFileLogging("./");
 const express = require("express");
 var cors = require('cors');
-var corsOptions = {
-  origin: '*',
-};
+var corsOptionsDelegate = function (req, callback) {
+  var corsOptions = {
+    origin: 'http://100.110.174.208:30000',
+    methods: ['GET', 'PUT', 'POST', 'DELETE'],
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+  }
+  callback(null, corsOptions)
+}
 
 const app = express();
 
@@ -66,7 +71,7 @@ async function start() {
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
 
-  app.use(cors(corsOptions));
+  app.use(cors(corsOptionsDelegate));
 
   const routes = require("./api/routes/routes");
   routes(app); // register the routes

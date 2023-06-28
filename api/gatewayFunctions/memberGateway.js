@@ -76,6 +76,63 @@ exports.createNewMember = async (req, res) => {
   );
 };
 
+exports.createNewCalander = async (req, res) => {
+  let startTimestamp = new Date().getTime();
+
+  let memberID = req.params.MemberID;
+  let name = req.body.name;
+  let colour = req.body.colour;
+
+  var response = await memberFunctions
+    .createNewCalander(memberID, name, colour, true)
+    .catch((err) => {
+      console.log("ERR: ", err);
+      res.status(codes.Bad_Request);
+      return "error";
+    });
+  if (typeof response != "object" && response.includes("exists")) {
+    res.status(codes.Conflict);
+    res.send({ error: response });
+    return;
+  }
+  if (response === "err") {
+    res.status(codes.Bad_Request);
+  } else {
+    res.status(codes.Ok);
+  }
+  res.json({ response: { id: response.calanderID } });
+
+  monitoring.log(
+    "createNewCalander - gateway",
+    new Date().getTime() - startTimestamp
+  );
+};
+
+exports.deleteCalander = async (req, res) => {
+  let startTimestamp = new Date().getTime();
+
+  let memberID = req.params.MemberID;
+  let calanderID = req.body.CalanderID;
+
+  let response = await memberFunctions.deleteCalander(memberID, calanderID).catch((err) => {
+    console.log("ERR: ", err);
+    res.status(codes.Bad_Request);
+    return "err";
+  });
+
+  if (response === "err") {
+    res.status(codes.Bad_Request);
+  } else {
+    res.status(codes.Ok);
+  }
+  res.json({ response: response });
+
+  monitoring.log(
+      "deleteCalander - completed",
+      new Date().getTime() - startTimestamp
+  );
+};
+
 exports.getMemberRecord = async (req, res) => {
   let MemberID = req.params.MemberID;
 
@@ -90,20 +147,24 @@ exports.getMemberRecord = async (req, res) => {
   );
 };
 
-exports.updateMember = (req, res) => {
+exports.updateMember = async (req, res) => {
   res.status(codes.Ok);
   res.send("Disabled gateway.");
-  // var response = Members.findOneAndUpdate({ id: req.params.MemberID
-  // },req.body, { new: true }
-  //     console.log("ERR: ", err);
-  //     return ("err");
-  // });
+  return;
 
-  // if (response == "err") {
-  //     res.status(codes.Bad_Request);
-  // } else {
-  //     res.status(codes.Ok);
-  // }
+  let memberID = req.params.MemberID;
+
+  let update = {};
+  req.body.username ? (update.username = req.body.username) : null;
+  req.body.email ? (update.email = req.body.email) : null;
+
+  let response = await Members.findOneAndUpdate({ id: req.params.MemberID}, update, { new: false });
+
+  if (response == "err") {
+      res.status(codes.Bad_Request);
+  } else {
+      res.status(codes.Ok);
+  }
   // Members.findOneAndUpdate({ id: req.params.MemberID },
   //     req.body, { new: true },
   //     (err, Response) => {

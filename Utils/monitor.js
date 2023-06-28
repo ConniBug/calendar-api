@@ -96,9 +96,9 @@ exports.log = async (module_t, timeTaken) => {
   var i = 0;
   var found = false;
   data.forEach((e) => {
-    if (e.name == module_t) {
+    if (e.name === module_t) {
       var shouldHalf = false;
-      if (data[i].averageTimes.all != -1) shouldHalf = true;
+      if (data[i].averageTimes.all !== -1) shouldHalf = true;
 
       // Submit data
       data[i].data.push({ timeTaken: timeTaken, timeStamp: getDateTime() });

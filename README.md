@@ -8,11 +8,14 @@ Authentication API
 
 # Documentation
 
-### Member API
-https://documenter.getpostman.com/view/14329009/TzCL7ntF
+### Event API
+https://documenter.getpostman.com/view/14329009/2s93sgV9xH
 
 ### Auth API
-https://documenter.getpostman.com/view/14329009/TzJx8wKc
+https://documenter.getpostman.com/view/14329009/2s93sjVUjg
+
+### Member API
+https://documenter.getpostman.com/view/14329009/2s93sjVUji
 
 ## Configuration
 

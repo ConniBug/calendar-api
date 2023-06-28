@@ -38,14 +38,13 @@ module.exports.createNewCalander = async (memberID, name, colour, editable) => {
     l.error("Member not found " + memberID);
     return { status: "Member not found" };
   } doc = doc[0];
-  console.log(doc);
+
   doc.calanders.push({
     id: calID,
     name: name,
     colour: colour,
     editable: editable,
   });
-  console.log(doc);
 
   let res = await doc.save();
   if(!res) {
@@ -57,6 +56,37 @@ module.exports.createNewCalander = async (memberID, name, colour, editable) => {
 
   return { calanderID: calID };
 }
+
+/**
+ * Delete a calander based off the member id and calander id.
+ * @param MemberID
+ * @param CalanderID
+ * @returns {string} status text. Ok/Failed/Already Exists
+ */
+module.exports.deleteCalander = async (MemberID, CalanderID) => {
+  if (debugMemberFuncs) {
+    l.debug(`Request to delete a calander with : ${MemberID} : ${CalanderID}`);
+  }
+
+  let doc = await Members.find({ id: MemberID }).clone().exec();
+
+  if (!doc[0]) {
+    l.error("Member not found " + MemberID);
+    return { status: "Member not found" };
+  } doc = doc[0];
+
+  doc.calanders = doc.calanders.filter(function(e) { return e.id !== CalanderID })
+
+  let res = await doc.save();
+  if(!res) {
+    l.error("Failed to save calander");
+    return { status: "Failed to save calander" };
+  }
+  if (debugMemberFuncs)
+    l.debug("Calander deleted with id: " + CalanderID);
+
+  return { status: "Success" };
+};
 
 /**
  * Get a list of all members within database.
@@ -130,7 +160,7 @@ module.exports.deleteMember = async (MemberID) => {
     throw "err";
   });
 
-  if (!response || response[0] == undefined || response == []) {
+  if (!response || response[0] === undefined || response === []) {
     l.log(`[ ${null} ] - Tried to delete a member that doesnt exist.`);
     throw "Tried to delete a member that doesnt exist.";
   }
