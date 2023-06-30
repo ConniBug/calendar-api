@@ -30,13 +30,25 @@ var cors = require('cors');
 
 const websockets = require("./services/web-sockets");
 
-var corsOptionsDelegate = function (req, callback) {
-  var corsOptions = {
-    origin: 'http://100.110.174.208:30000',
-    methods: ['GET', 'PUT', 'POST', 'DELETE'],
-    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+const allowlist = ['http://100.110.174.208:30000', 'https://cal.transgirl.space']
+let corsOptionsDelegate = function (req, callback) {
+  let corsOptions = {};
+  // console.log(req.header('Origin'));
+  // console.log(allowlist.indexOf(req.header('Origin')));
+
+  if (allowlist.indexOf(req.header('Origin')) !== -1) {
+    corsOptions = {
+      origin: true,      // reflect (enable) the requested origin in the CORS response
+      methods: true,     // enable all requested HTTP methods
+    }
+
   }
-  callback(null, corsOptions)
+  else
+    corsOptions = { origin: false } // disable CORS for this request
+
+  corsOptions.methods = ['GET', 'POST', 'PUT', 'DELETE'];
+
+  callback(null, corsOptions) // callback expects two parameters: error and options
 }
 
 const app = express();
