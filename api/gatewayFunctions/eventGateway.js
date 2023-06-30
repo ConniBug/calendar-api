@@ -9,14 +9,24 @@ const eventFunctions = require("../../Utils/functions/eventFunctions");
 const l = require("@connibug/js-logging");
 const monitoring = require("../../Utils/monitor");
 
-
 exports.getEventInfo = async (eventID) => {
+  let startTimestamp = new Date().getTime();
+
   let member = await CBucket.find({ id: eventID }).catch((err) => {
     if (err) {
       console.log(err);
       l.log("getEventRecord had an error", "ERROR");
     }
   });
+
+  let duration = new Date().getTime() - startTimestamp;
+  l.log(`[ ${duration}ms ] - [ N/A ] - Get event info`);
+
+  monitoring.log(
+      "getEventInfo - gateway",
+      new Date().getTime() - startTimestamp
+  );
+
   return member;
 };
 
@@ -54,36 +64,41 @@ exports.getEvents = async (req, res) => {
 exports.createNewEvent = async (req, res) => {
   let startTimestamp = new Date().getTime();
 
-  var memberID = req.params.MemberID;
-  var calanderID = req.params.CalanderID;
+  let memberID = req.params.MemberID;
+  let calanderID = req.params.CalanderID;
 
-  var response = await eventFunctions
-    .newEvent(memberID, calanderID,
-        req.body.title,
-        req.body.description,
-        req.body.start,
-        req.body.end,
-        req.body.location)
-    .catch((err) => {
-      console.log("ERR: ", err);
-      res.status(codes.Bad_Request);
-      return "error";
-    });
-  if (typeof response != "object" && response.includes("exists")) {
+  let response = await eventFunctions
+      .newEvent(memberID, calanderID,
+          req.body.title,
+          req.body.description,
+          req.body.start,
+          req.body.end,
+          req.body.location)
+      .catch((err) => {
+        console.log("ERR: ", err);
+        res.status(codes.Bad_Request);
+        return "error";
+      });
+  if (typeof response !== "object" && response.includes("exists")) {
     res.status(codes.Conflict);
     res.send({ error: response });
     return;
   }
-  if (response == "err") {
+  if (response === "err") {
     res.status(codes.Bad_Request);
   } else {
     res.status(codes.Ok);
   }
   res.json({ response: { id: response } });
 
+
+  let duration = new Date().getTime() - startTimestamp;
+  let ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  l.log(`[ ${duration}ms ] - [ ${ip} ] - New event`);
+
   monitoring.log(
-    "newEvent - gateway",
-    new Date().getTime() - startTimestamp
+      "newEvent - gateway",
+      new Date().getTime() - startTimestamp
   );
 };
 
@@ -105,7 +120,7 @@ exports.updateEvent = async (req, res) => {
 
   l.log("Updating event id: " + eventID + " - with: " + JSON.stringify(update))
 
-  let eventArray = await eventFunctions.updateEvent(eventID, update).catch((err) => {
+  let eventArray = await eventFunctions.updateEvent(memberID, eventID, update).catch((err) => {
     console.log("ERR: ", err);
 
     res.status(codes.Bad_Request);
@@ -116,15 +131,15 @@ exports.updateEvent = async (req, res) => {
 
   let duration = new Date().getTime() - startTimestamp;
   let ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-  l.log(`[ ${duration}ms ] - [ ${ip} ] - Get events`);
+  l.log(`[ ${duration}ms ] - [ ${ip} ] - Update event`);
 
   monitoring.log(
-      "getEvents - gateway",
+      "updateEvent - gateway",
       duration
   );
 };
 
-exports.updateMember = (req, res) => {
+exports.updateMember = async (req, res) => {
   res.status(codes.Ok);
   res.send("Disabled gateway.");
   // var response = Members.findOneAndUpdate({ id: req.params.MemberID
@@ -160,7 +175,7 @@ exports.deleteEvent = async (req, res) => {
   let calanderID = req.params.CalanderID;
   let eventID = req.params.EventID;
 
-  var response = await eventFunctions.deleteEvent(memberID, eventID).catch((err) => {
+  let response = await eventFunctions.deleteEvent(memberID, eventID).catch((err) => {
     console.log("ERR: ", err);
     res.status(codes.Bad_Request);
     return "err";
@@ -173,8 +188,12 @@ exports.deleteEvent = async (req, res) => {
   }
   res.json({ response: response });
 
+  let duration = new Date().getTime() - startTimestamp;
+  let ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  l.log(`[ ${duration}ms ] - [ ${ip} ] - Delete event`);
+
   monitoring.log(
-    "deleteMember - completed",
+    "deleteEvent - gateway",
     new Date().getTime() - startTimestamp
   );
 };

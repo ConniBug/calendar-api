@@ -27,6 +27,9 @@ const l = require("@connibug/js-logging");
 l.setupFileLogging("./");
 const express = require("express");
 var cors = require('cors');
+
+const websockets = require("./services/web-sockets");
+
 var corsOptionsDelegate = function (req, callback) {
   var corsOptions = {
     origin: 'http://100.110.174.208:30000',

@@ -1,22 +1,23 @@
 "use strict";
 const mongoose = require("mongoose");
 
+const CBucket = mongoose.connection.model("CalanderBucket");
 const Members = mongoose.connection.model("Members");
-const memberFunctions = require("../../Utils/functions/memberFunctions");
 
-const codes = require("../../Utils/misc/error_codes").codes;
+const memberFunctions = require("../../Utils/functions/memberFunctions");
 
 const l = require("@connibug/js-logging");
 const monitoring = require("../../Utils/monitor");
 
+const codes = require("../../Utils/misc/error_codes").codes;
+
 async function getMemberRecord(memberID) {
-  let member = await Members.find({ id: memberID }).catch((err) => {
+  return await Members.find({id: memberID}).catch((err) => {
     if (err) {
       console.log(err);
       l.log("getMemberRecord had an error", "ERROR");
     }
   });
-  return member;
 }
 
 exports.getMemberInfo = async (memberID) => {
@@ -32,7 +33,7 @@ exports.getMemberInfo = async (memberID) => {
 exports.listMembers = async (req, res) => {
   let startTimestamp = new Date().getTime();
 
-  var memberArray = await memberFunctions.getAllMembers().catch((err) => {
+  let memberArray = await memberFunctions.getAllMembers().catch((err) => {
     console.log("ERR: ", err);
 
     res.status(codes.Bad_Request);
@@ -42,28 +43,28 @@ exports.listMembers = async (req, res) => {
   res.json(memberArray);
 
   let end = new Date().getTime();
-  var duration = end - startTimestamp;
+  let duration = end - startTimestamp;
 
-  var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  let ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
   l.log(`[ ${duration}ms ] - [ ${ip} ] - List members`);
 };
 
 exports.createNewMember = async (req, res) => {
   let startTimestamp = new Date().getTime();
 
-  var response = await memberFunctions
+  let response = await memberFunctions
     .createNewMember(req.body.username, req.body.email, req.body.password)
     .catch((err) => {
       console.log("ERR: ", err);
       res.status(codes.Bad_Request);
       return "error";
     });
-  if (typeof response != "object" && response.includes("exists")) {
+  if (typeof response !== "object" && response.includes("exists")) {
     res.status(codes.Conflict);
     res.send({ error: response });
     return;
   }
-  if (response == "err") {
+  if (response === "err") {
     res.status(codes.Bad_Request);
   } else {
     res.status(codes.Ok);
@@ -76,14 +77,14 @@ exports.createNewMember = async (req, res) => {
   );
 };
 
-exports.createNewCalander = async (req, res) => {
+exports.createNewCalendar = async (req, res) => {
   let startTimestamp = new Date().getTime();
 
   let memberID = req.params.MemberID;
   let name = req.body.name;
   let colour = req.body.colour;
 
-  var response = await memberFunctions
+  let response = await memberFunctions
     .createNewCalander(memberID, name, colour, true)
     .catch((err) => {
       console.log("ERR: ", err);
@@ -102,10 +103,11 @@ exports.createNewCalander = async (req, res) => {
   }
   res.json({ response: { id: response.calanderID } });
 
-  monitoring.log(
-    "createNewCalander - gateway",
-    new Date().getTime() - startTimestamp
-  );
+  let duration = new Date().getTime() - startTimestamp;
+  let ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  l.log(`[ ${duration}ms ] - [ ${ip} ] - Create new calendar`);
+
+  monitoring.log("createNewCalendar - gateway", duration);
 };
 
 exports.deleteCalander = async (req, res) => {
@@ -113,6 +115,14 @@ exports.deleteCalander = async (req, res) => {
 
   let memberID = req.params.MemberID;
   let calanderID = req.body.CalanderID;
+
+  // TODO: This doesnt sync with the websockets
+  // Create a separate thread to delete the calanders events.
+  l.verbose(`Deleting events for calander ${calanderID}`);
+  CBucket.deleteMany({ calanderID: `${calanderID}` }).catch((error) => {
+    logging.log(err, "ERROR", "deleteEvents by calanderID - " + calanderID);
+    throw "err";
+  });
 
   let response = await memberFunctions.deleteCalander(memberID, calanderID).catch((err) => {
     console.log("ERR: ", err);
@@ -127,27 +137,41 @@ exports.deleteCalander = async (req, res) => {
   }
   res.json({ response: response });
 
+  let duration = new Date().getTime() - startTimestamp;
+  let ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  l.log(`[ ${duration}ms ] - [ ${ip} ] - Delete calander`);
+
   monitoring.log(
-      "deleteCalander - completed",
+      "deleteCalander - gateway",
       new Date().getTime() - startTimestamp
   );
 };
 
 exports.getMemberRecord = async (req, res) => {
+  let startTimestamp = new Date().getTime();
+
   let MemberID = req.params.MemberID;
 
   let member = await getMemberRecord(MemberID);
   member = member[0];
 
-  // res.json(
-  //   formattingData.formatMemberData(member, formattingData.dataFormats.USER)
-  // );
   res.json(
     member
+  );
+
+  let duration = new Date().getTime() - startTimestamp;
+  let ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  l.log(`[ ${duration}ms ] - [ ${ip} ] - Get member record`);
+
+  monitoring.log(
+      "getMemberRecord - gateway",
+      new Date().getTime() - startTimestamp
   );
 };
 
 exports.updateMember = async (req, res) => {
+  let startTimestamp = new Date().getTime();
+
   res.status(codes.Ok);
   res.send("Disabled gateway.");
   return;
@@ -160,7 +184,7 @@ exports.updateMember = async (req, res) => {
 
   let response = await Members.findOneAndUpdate({ id: req.params.MemberID}, update, { new: false });
 
-  if (response == "err") {
+  if (response === "err") {
       res.status(codes.Bad_Request);
   } else {
       res.status(codes.Ok);
@@ -178,47 +202,60 @@ exports.updateMember = async (req, res) => {
   //         res.json(Response);
   //     }
   // );
+  let duration = new Date().getTime() - startTimestamp;
+  let ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  l.log(`[ ${duration}ms ] - [ ${ip} ] - Update member`);
+
+  monitoring.log(
+      "updateMember - gateway",
+      new Date().getTime() - startTimestamp
+  );
 };
 
 exports.deleteMember = async (req, res) => {
   let startTimestamp = new Date().getTime();
 
-  var memberID = req.params.MemberID;
+  let memberID = req.params.MemberID;
 
-  var response = await memberFunctions.deleteMember(memberID).catch((err) => {
+  let response = await memberFunctions.deleteMember(memberID).catch((err) => {
     console.log("ERR: ", err);
     res.status(codes.Bad_Request);
     return "err";
   });
 
-  if (response == "err") {
+  if (response === "err") {
     res.status(codes.Bad_Request);
   } else {
     res.status(codes.Ok);
   }
   res.json({ response: response });
 
-  monitoring.log(
-    "deleteMember - completed",
-    new Date().getTime() - startTimestamp
-  );
+  let duration = new Date().getTime() - startTimestamp;
+  let ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  l.log(`[ ${duration}ms ] - [ ${ip} ] - Delete member`);
+
+  monitoring.log("deleteMember - gateway", duration);
 };
 
 exports.login = async (req, res) => {
   let startTimestamp = new Date().getTime();
+  let ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
 
-  var response = await memberFunctions.memberLogin(req.body).catch((err) => {
+  let response = await memberFunctions.memberLogin(req.body, ip).catch((err) => {
     console.log("ERR: ", err);
     res.status(codes.Bad_Request);
     return "err";
   });
 
-  if (response == "err") {
+  if (response === "err") {
     res.status(codes.Bad_Request);
   } else {
     res.status(codes.Ok);
   }
   res.json({ response: response });
 
-  monitoring.log("login - valid", new Date().getTime() - startTimestamp);
+  let duration = new Date().getTime() - startTimestamp;
+  l.log(`[ ${duration}ms ] - [ ${ip} ] - Login valid`);
+
+  monitoring.log("login - valid", duration);
 };

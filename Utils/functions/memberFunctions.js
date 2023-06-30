@@ -13,12 +13,13 @@ const SnowflakeFnc = require("../snowflake").GenerateID;
 const TokenFunc = require("../token");
 const BCrypt = require(`bcrypt`);
 const crypto = require("crypto");
+const websockets = require("../../services/web-sockets");
 require("dotenv").config();
 
 const debugMemberFuncs = process.env.debug && true;
 
 /**
- * create a new calander within user account.
+ * create a new calendar within user account.
  * @param memberID
  * @param name
  * @param colour
@@ -46,26 +47,37 @@ module.exports.createNewCalander = async (memberID, name, colour, editable) => {
     editable: editable,
   });
 
+  websockets.send_message(memberID, {
+    type: "new_calander",
+    data: {
+        id: calID,
+        name: name,
+        colour: colour,
+        editable: editable,
+    },
+    at_time: Date.now(),
+  });
+
   let res = await doc.save();
   if(!res) {
-    l.error("Failed to save calander");
-    return { status: "Failed to save calander" };
+    l.error("Failed to save calendar");
+    return { status: "Failed to save calendar" };
   }
   if (debugMemberFuncs)
-    l.debug("New calander created with id: " + calID);
+    l.debug("New calendar created with id: " + calID);
 
   return { calanderID: calID };
 }
 
 /**
- * Delete a calander based off the member id and calander id.
+ * Delete a calendar based off the member id and calendar id.
  * @param MemberID
  * @param CalanderID
  * @returns {string} status text. Ok/Failed/Already Exists
  */
 module.exports.deleteCalander = async (MemberID, CalanderID) => {
   if (debugMemberFuncs) {
-    l.debug(`Request to delete a calander with : ${MemberID} : ${CalanderID}`);
+    l.debug(`Request to delete a calendar with : ${MemberID} : ${CalanderID}`);
   }
 
   let doc = await Members.find({ id: MemberID }).clone().exec();
@@ -77,13 +89,21 @@ module.exports.deleteCalander = async (MemberID, CalanderID) => {
 
   doc.calanders = doc.calanders.filter(function(e) { return e.id !== CalanderID })
 
+  websockets.send_message(MemberID, {
+    type: "delete_calendar",
+    data: {
+      id: CalanderID,
+    },
+    at_time: Date.now(),
+  });
+
   let res = await doc.save();
   if(!res) {
-    l.error("Failed to save calander");
-    return { status: "Failed to save calander" };
+    l.error("Failed to save calendar");
+    return { status: "Failed to save calendar" };
   }
   if (debugMemberFuncs)
-    l.debug("Calander deleted with id: " + CalanderID);
+    l.debug("Calendar deleted with id: " + CalanderID);
 
   return { status: "Success" };
 };
@@ -107,7 +127,7 @@ module.exports.createNewMember = async (username, email, password) => {
   if (debugMemberFuncs)
     l.debug(`Request to create user with username < ${username} > and email < ${email} >`);
 
-  var check = await Members.find({
+  let check = await Members.find({
     $or: [{ email: email }, { username: username }],
   }); check = check[0];
   if (check) {
@@ -129,9 +149,7 @@ module.exports.createNewMember = async (username, email, password) => {
     }
   }
 
-  var hashedPassword = hashing.hash(password);
-  if (debugMemberFuncs) 
-    l.debug("hashed password: " + hashedPassword);
+  let hashedPassword = hashing.hash(password);
 
   let id = SnowflakeFnc();
   let tmp_NewMember = new Members({
@@ -154,7 +172,7 @@ module.exports.createNewMember = async (username, email, password) => {
  * @returns {string} status text. Ok/Failed/Already Exists
  */
 module.exports.deleteMember = async (MemberID) => {
-  var response = await Members.find({ id: MemberID }).catch((error) => {
+  let response = await Members.find({ id: MemberID }).catch((error) => {
     res.send(err);
     l.log(err, "ERROR", "deleteMember");
     throw "err";
@@ -165,12 +183,20 @@ module.exports.deleteMember = async (MemberID) => {
     throw "Tried to delete a member that doesnt exist.";
   }
 
-  var deleteResponse = await Members.deleteOne({ id: MemberID }).catch(
+  let deleteResponse = await Members.deleteOne({ id: MemberID }).catch(
     (error) => {
       l.log(error, "ERROR", `deleteOne(${{ id: MemberID }})`);
       throw "err";
     }
   );
+
+  websockets.send_message(MemberID, {
+    type: "delete_member",
+    data: {
+      id: MemberID,
+    },
+    at_time: Date.now(),
+  });
 
   console.log("Delete response:", deleteResponse);
 
@@ -178,11 +204,12 @@ module.exports.deleteMember = async (MemberID) => {
 };
 
 /**
- * Loging to user account
+ * Logging in to a user account
  * @param {json} body res.body from http request.
+ * @param ip
  * @returns {string} status text.
  */
-module.exports.memberLogin = async (body) => {
+module.exports.memberLogin = async (body, ip = "N/A") => {
   let startTimestamp = new Date().getTime();
 
   let email = body.email;
@@ -196,11 +223,6 @@ module.exports.memberLogin = async (body) => {
     return "Un-Authenticated";
 
   let tokenSecret = response.tokenSecret;
-
-  // monitoring.log(
-  //     "memberLogin - find user from email",
-  //     new Date().getTime() - startTimestamp
-  // );
 
   let valid_password = BCrypt.compareSync(
       password,
@@ -227,6 +249,14 @@ module.exports.memberLogin = async (body) => {
       "memberLogin - update db with new tokenSecret",
       new Date().getTime() - startTimestamp
   );
+
+  websockets.send_message(response.id, {
+    type: "user_login",
+    data: {
+        new_login_ip: ip,
+    },
+    at_time: Date.now(),
+  });
 
   return {id: response.id, token: token, expiry: parseInt(new Date().getTime() * 0.001) + parseInt(expiry)};
 };

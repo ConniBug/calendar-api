@@ -21,6 +21,7 @@
   "homepage": "https://github.com/ConniBug/calander-api#readme",
   "dependencies": {
     "@connibug/js-logging": "^2.0.1",
+    "atatus-nodejs": "^1.6.3",
     "bcrypt": "^5.0.1",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
@@ -33,6 +34,8 @@
     "nodemon": "^2.0.13",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
-    "snowflakey": "^0.2.0"
+    "snowflakey": "^0.2.0",
+    "websocket": "^1.0.34",
+    "ws": "^8.13.0"
   }
 }

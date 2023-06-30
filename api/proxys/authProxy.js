@@ -19,8 +19,6 @@ async function isTokenValid(userID, submittedToken) {
   }
 
   let memberSecret = member.tokenSecret;
-  // logging.log(`Token Validation - userId: ${userID} - MemberSecret:
-  // ${memberSecret}`, "GENERIC");
 
   // Decode submitted token using stored member secret.
   try {
@@ -45,6 +43,8 @@ async function isTokenValid(userID, submittedToken) {
     return false;
   }
 }
+
+module.exports.isTokenValid = isTokenValid;
 
 module.exports.authWrapper = async (req, res, next) => {
   let startTimestamp = new Date().getTime();
@@ -72,6 +72,7 @@ module.exports.authWrapper = async (req, res, next) => {
     return false;
   }
   m.log("authWrapper - valid", timeTaken);
+  res.locals.user = req.params.MemberID;
   next();
   return true;
 };

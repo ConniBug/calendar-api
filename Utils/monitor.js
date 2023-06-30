@@ -49,45 +49,7 @@ function getSpecificDataSet(name) {
 }
 
 exports.data = (req, res) => {
-  var colours = [
-    {
-      bg: "rgb(255, 99, 132)",
-      border: "rgb(255, 99, 132)",
-    },
-  ];
-
-  var curColour = 0;
-
-  function createDataSet(label, times) {
-    return {
-      label: label,
-      backgroundColor: colours[curColour].bg,
-      borderColor: colours[curColour].border,
-      data: times,
-    };
-  }
-
-  var all = [];
-
-  if(req.body.target != "all")
-    var dat = getSpecificDataSet(req.body.target);
-  else
-    dat = data;
-  
-  var times = dat[0];
-
-  //console.log(times);
-  var dataSet = createDataSet(
-    req.body.target,
-    getSpecificDataSet(req.body.target)[1]
-  );
-  //console.log(dataSet);
-
-  all.push(dataSet);
-
-  //console.log("All:",all[0]);
-
-  res.json({ all: all[0], times: times });
+  res.json(data);
 };
 
 exports.log = async (module_t, timeTaken) => {

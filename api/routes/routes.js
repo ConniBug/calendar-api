@@ -1,12 +1,13 @@
 "use strict";
-const {authWrapper} = require("../proxys/authProxy");
-const memberGateway = require("../gatewayFunctions/memberGateway");
-const eventGateway = require("../gatewayFunctions/eventGateway");
+
+const path = require("path");
+
 module.exports = (app) => {
   const memberGateway = require("../gatewayFunctions/memberGateway");
-  const authenticationGateway = require("../gatewayFunctions/authGateway");
+  const authenticationGateway = require("../gatewayFunctions/authGateway.js");
   const testingGateway = require("../gatewayFunctions/testingGateway.js");
   const eventGateway = require("../gatewayFunctions/eventGateway.js");
+  const icalGateway = require("../gatewayFunctions/icalGateway.js");
 
   const authWrapper = require("../proxys/authProxy").authWrapper;
 
@@ -18,11 +19,11 @@ module.exports = (app) => {
   //#region Un-Authenticated Routes
 
   app
-      .route("/api/member/register")
+      .route("/api/register")
       .post(memberGateway.createNewMember);
 
   app
-      .route("/api/member/login")
+      .route("/api/login")
       .post(memberGateway.login);
 
   //#endregion
@@ -39,13 +40,13 @@ module.exports = (app) => {
    */
   //#region Member Gateway
   app
-    .route("/api/member/:MemberID")
+    .route("/api/:MemberID")
     .get(authWrapper, memberGateway.getMemberRecord)
     .put(authWrapper, memberGateway.updateMember)
     .delete(authWrapper, memberGateway.deleteMember);
   app
-    .route("/api/member/:MemberID/calander")
-    .post(authWrapper, memberGateway.createNewCalander)
+    .route("/api/:MemberID/calander")
+    .post(authWrapper, memberGateway.createNewCalendar)
     .delete(authWrapper, memberGateway.deleteCalander);
   //#endregion
 
@@ -55,15 +56,30 @@ module.exports = (app) => {
    *
    */
   app
-      .route("/api/member/:MemberID/calander/:CalanderID")
+      .route("/api/:MemberID/events/:CalanderID")
       .post(authWrapper, eventGateway.createNewEvent)
       .get(authWrapper, eventGateway.getEvents);
 
   app
-      .route("/api/:MemberID/:CalanderID/:EventID")
+      .route("/api/:MemberID/events/:CalanderID/:EventID")
       .put(authWrapper, eventGateway.updateEvent)
       .delete(authWrapper, eventGateway.deleteEvent);
   //#endregion
+
+  /**
+   *
+   * ICal Gateways
+   *
+   */
+  app
+      .route("/api/:MemberID/ical")
+      .get(authWrapper, icalGateway.getICals)
+      .post(authWrapper, icalGateway.createNewIcal);
+
+  app
+      .route("/api/:MemberID/ical/:IcalID");
+      // .get(authWrapper, icalGateway.getICal)
+      // .delete(authWrapper, icalGateway.deleteIcal);
 
   /**
    * Monitoring API
@@ -71,6 +87,11 @@ module.exports = (app) => {
   //#region Monitoring API
 
   app.route("/api/monitoring/data").get(monitoringUtils.data);
+
+  app.get('/api/monitoring/front', function(req, res) {
+    console.log(__dirname);
+    res.sendFile(path.join(__dirname, '../../ana.html'));
+  });
 
   //#endregion
 
