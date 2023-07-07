@@ -17,8 +17,8 @@ const server = https.createServer({
     response.end();
 });
 
-server.listen(443, function() {
-    l.log('Websocket Server is listening on port 443');
+server.listen(400, function() {
+    l.log('Websocket HTTPS Server is listening on port 400');
 });
 
 wsServer = new WebSocketServer({
