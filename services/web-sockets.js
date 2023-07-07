@@ -17,8 +17,8 @@ const server = https.createServer({
     response.end();
 });
 
-server.listen(8080, function() {
-    l.log('Websocket Server is listening on port 8080');
+server.listen(443, function() {
+    l.log('Websocket Server is listening on port 443');
 });
 
 wsServer = new WebSocketServer({
