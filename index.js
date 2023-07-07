@@ -26,8 +26,12 @@ const https = require('https');
 const http = require('http');
 
 let cors = require('cors');
-const allowlist = ['http://100.110.174.208:30000', 'https://cal.transgirl.space']
-let corsOptionsDelegate = function (req, callback) {
+const allowlist = [
+  "https://cal.transgirl.space", "http://cal.transgirl.space",
+  "https://100.110.174.208:30000", "http://100.110.174.208:30000",
+  "https://localhost:30000", "http://localhost:30000",
+  "https://localhost", "http://localhost",
+];let corsOptionsDelegate = function (req, callback) {
   let corsOptions = {};
   // console.log(req.header('Origin'));
   // console.log(allowlist.indexOf(req.header('Origin')));
@@ -37,7 +41,6 @@ let corsOptionsDelegate = function (req, callback) {
       origin: true,      // reflect (enable) the requested origin in the CORS response
       methods: true,     // enable all requested HTTP methods
     }
-
   }
   else
     corsOptions = { origin: false } // disable CORS for this request

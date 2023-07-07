@@ -27,11 +27,19 @@ wsServer = new WebSocketServer({
 });
 
 function originIsAllowed(origin) {
-    let allowedOrigins = [ "https://100.110.174.208:30000" ];
+    let allowedOrigins = [
+        "https://cal.transgirl.space", "http://cal.transgirl.space",
+        "https://100.110.174.208:30000", "http://100.110.174.208:30000",
+        "https://localhost:30000", "http://localhost:30000",
+        "https://localhost", "http://localhost",
+    ];
     return allowedOrigins.includes(origin);
 }
 
 wsServer.on('request', function(request) {
+    request.path = request.resourceURL.pathname;
+    console.log(request.origin);
+
     if (!originIsAllowed(request.origin)) {
         // Make sure we only accept requests from an allowed origin
         request.reject();
