@@ -9,7 +9,7 @@ mongoose.connect(process.env.mongodb_main).catch((err) => {
 
 // Load MongoDB Models
 require("../api/models/MemberModel");
-require("../api/models/CalanderBucketModel");
+require("../api/models/CalendarBucketModel");
 require("../api/models/IcalModel");
 
 module.exports = mongoose;

@@ -1,6 +1,6 @@
 "use strict";
 const mongoose = require("mongoose");
-const CBucket = mongoose.connection.model("CalanderBucket");
+const CBucket = mongoose.connection.model("CalendarBucket");
 
 const codes = require("../../Utils/misc/error_codes").codes;
 
@@ -36,13 +36,13 @@ exports.getEvents = async (req, res) => {
   let start_date, end_date = 0;
 
   let memberID = req.params.MemberID;
-  let calanderID = req.params.CalanderID;
+  let calendarID = req.params.CalendarID;
 
   let limit = req.body.limit;
   let title = req.body.title;
   let description = req.body.description;
 
-  let eventArray = await eventFunctions.getEvents(memberID, calanderID, limit, title, description, start_date, end_date).catch((err) => {
+  let eventArray = await eventFunctions.getEvents(memberID, calendarID, limit, title, description, start_date, end_date).catch((err) => {
     console.log("ERR: ", err);
 
     res.status(codes.Bad_Request);
@@ -65,10 +65,10 @@ exports.createNewEvent = async (req, res) => {
   let startTimestamp = new Date().getTime();
 
   let memberID = req.params.MemberID;
-  let calanderID = req.params.CalanderID;
+  let calendarID = req.params.CalendarID;
 
   let response = await eventFunctions
-      .newEvent(memberID, calanderID,
+      .newEvent(memberID, calendarID,
           req.body.title,
           req.body.description,
           req.body.start,
@@ -106,14 +106,14 @@ exports.updateEvent = async (req, res) => {
   let startTimestamp = new Date().getTime();
 
   let memberID = req.params.MemberID;
-  let calanderID = req.params.CalanderID;
+  let calendarID = req.params.CalendarID;
   let eventID = req.params.EventID;
 
   let update = {};
   req.body.title ? (update.title = req.body.title) : null;
   req.body.description ? (update.description = req.body.description) : null;
   req.body.authorID ? (update.authorID = req.body.authorID) : null;
-  req.body.calanderID ? (update.calanderID = req.body.calanderID) : null;
+  req.body.calendarID ? (update.calendarID = req.body.calendarID) : null;
   req.body.start ? (update.eventStart = req.body.start) : null;
   req.body.end ? (update.eventEnd = req.body.end) : null;
   req.body.location ? (update.location = req.body.location) : null;
@@ -172,7 +172,7 @@ exports.deleteEvent = async (req, res) => {
   let startTimestamp = new Date().getTime();
 
   let memberID = req.params.MemberID;
-  let calanderID = req.params.CalanderID;
+  let calendarID = req.params.CalendarID;
   let eventID = req.params.EventID;
 
   let response = await eventFunctions.deleteEvent(memberID, eventID).catch((err) => {

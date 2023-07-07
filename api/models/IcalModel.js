@@ -14,7 +14,7 @@ const ICalSchema = new Schema({
     id: { type: String, default: Snowflake, required: "Need id" },
     ownerID: { type: String, required: "Need ownerID" },
     url: { type: String, required: "Need url" },
-    calanderID: { type: String, required: "Need calanderID" },
+    calendarID: { type: String, required: "Need calendarID" },
 
     createdDate: { type: Date, default: Date.now },
 });

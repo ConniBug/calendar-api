@@ -12,7 +12,7 @@ const MemberSchema = new Schema({
   hash: { type: String, required: "Hash of password is needed" },
   phoneNumber: { type: String, default: "NA" },
   email: { type: String },
-  calanders: { type: Array },
+  calendars: { type: Array },
 
   // Filled in during first login
   token: { type: String, default: "NA", required: "Token. needed." },

@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
-const CBucket = mongoose.connection.model("CalanderBucket");
+const CBucket = mongoose.connection.model("CalendarBucket");
 
 const guildSnowflake = require("../snowflake").GenerateID;
-const logging = require("@connibug/js-logging");
+const l = require("@connibug/js-logging");
 const websockets = require("../../services/web-sockets");
 
 /**
@@ -30,9 +30,9 @@ module.exports.updateEvent = async (memberID, eventID, update) => {
 }
 
 /**
- * Creates a new event in a calander
+ * Creates a new event in a calendar
  * @param {string} OwnerID
- * @param {string} calanderID
+ * @param {string} calendarID
  * @param {string} title
  * @param {string} description
  * @param {string} start
@@ -40,11 +40,11 @@ module.exports.updateEvent = async (memberID, eventID, update) => {
  * @param {string} location
  * @returns {string} Status text.
  */
-module.exports.newEvent = async (OwnerID, calanderID,
+module.exports.newEvent = async (OwnerID, calendarID,
                                  title, description, start, end, location) => {
-  logging.log(`Creating new event with: ${OwnerID} : ${calanderID} : ${title} : ${description} : ${start} : ${end} : ${location}`);
+  l.log(`Creating new event with: ${OwnerID} : ${calendarID} : ${title} : ${description} : ${start} : ${end} : ${location}`);
 
-  if(!OwnerID || !calanderID || !start || !end) {
+  if(!OwnerID || !calendarID || !start || !end) {
     throw "Missing required fields";
   }
 
@@ -55,7 +55,7 @@ module.exports.newEvent = async (OwnerID, calanderID,
     authorID: OwnerID,
     eventStart: start,
     eventEnd: end,
-    calanderID: calanderID,
+    calendarID: calendarID,
     location: location || "No location",
   });
 
@@ -80,7 +80,7 @@ module.exports.newEvent = async (OwnerID, calanderID,
 
 
 
-module.exports.getEvents = async (memberID, calanderID, limit, title, description, start_date, end_date) => {
+module.exports.getEvents = async (memberID, calendarID, limit, title, description, start_date, end_date) => {
   let filter = { authorID: memberID };
   limit ? filter["limit"] = limit : null;
   title ? filter["title"] = title : null;
@@ -113,19 +113,19 @@ module.exports.deleteEvent = async (memberID, eventID) => {
 
   let response = await CBucket.find({ id: eventID, authorID: memberID }).catch((error) => {
     res.send(err);
-    logging.log(err, "ERROR", "deleteEvent");
+    l.log(err, "ERROR", "deleteEvent");
     throw "err";
   });
 
   if (!response || response[0] === undefined || response === []) {
     // var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-    logging.log(`[ ${null} ] - Tried to delete an event that doesnt exist.`);
+    l.log(`[ ${null} ] - Tried to delete an event that doesnt exist.`);
     throw "Tried to delete an event that doesnt exist.";
   }
 
   let deleteResponse = await CBucket.deleteOne({ id: eventID, authorID: memberID }).catch(
       (error) => {
-        logging.log(error, "ERROR", `deleteOne(${{ id: eventID, authorID: memberID }})`);
+        l.log(error, "ERROR", `deleteOne(${{ id: eventID, authorID: memberID }})`);
         throw "err";
       }
   );

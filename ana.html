@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Data Analysis</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<style>
+  .scrollable {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .dark-mode {
+    background-color: #222;
+    color: #fff;
+  }
+
+  .card-dark-mode {
+    background-color: #333;
+    color: #fff;
+  }
+
+  .search-results {
+    justify-content: flex-start !important;
+  }
+</style>
+<body>
+
+<div class="container">
+  <h1>Data Analysis</h1>
+
+  <div class="row">
+    <div class="col-md-4 mb-3">
+      <input id="searchInput" type="text" class="form-control" placeholder="Search">
+    </div>
+    <div class="col-md-4 mb-3">
+      <select id="sortSelect" class="form-select">
+        <option value="Total Time">Sort by Total Time</option>
+        <option value="Average Times">Sort by Average Times</option>
+        <option value="Call Count">Sort by Call Count</option>
+      </select>
+    </div>
+    <div class="col-md-4 mb-3">
+      <button id="toggleModeBtn" class="btn btn-primary">Toggle Mode</button>
+    </div>
+    <div class="col-md-4 mb-3">
+      <button id="toggleSortBtn" class="btn btn-primary">Toggle Sort Order</button>
+    </div>
+  </div>
+
+  <div id="results" class="row row-cols-1 row-cols-md-2 g-4"></div>
+</div>
+
+<script>
+  $(document).ready(function () {
+    fetchData();
+  });
+
+  function fetchData() {
+    var apiUrl = 'http://100.110.174.208:3000/api/monitoring/data'; // Set your API endpoint URL here
+
+    $.get(apiUrl, function (data) {
+      displayData(data);
+      generateGraphs(data);
+    });
+  }
+
+  function displayData(items) {
+    var resultsDiv = $('#results');
+    resultsDiv.empty();
+
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+
+      var itemCard = $('<div>').addClass('col');
+      var card = $('<div>').addClass('card h-100 card-wrapper');
+      var cardBody = $('<div>').addClass('card-body');
+
+      var heading = $('<h2>').addClass('card-title').text(item.name);
+      cardBody.append(heading);
+
+      var itemInfo = $('<div>').addClass('card-text');
+
+      var averageTimesDiv = $('<div>').addClass('highlight').html('Average Times (All): ' + item.averageTimes.all);
+      itemInfo.append(averageTimesDiv);
+
+      var totalTimeDiv = $('<div>').addClass('highlight').html('Total Time: ' + item.totalTime);
+      itemInfo.append(totalTimeDiv);
+
+      var callCountDiv = $('<div>').addClass('highlight').html('Call Count: ' + item.callCount);
+      itemInfo.append(callCountDiv);
+
+      cardBody.append(itemInfo);
+
+      var dataDiv = $('<div>').addClass('card-text scrollable');
+      var data = item.data;
+      for (var j = 0; j < data.length; j++) {
+        var timeTaken = data[j].timeTaken;
+        var timeStamp = data[j].timeStamp;
+
+        var dataItemDiv = $('<div>').text('Time Taken: ' + timeTaken + ', Time Stamp: ' + timeStamp);
+        dataDiv.append(dataItemDiv);
+      }
+      cardBody.append(dataDiv);
+
+      var graphCanvas = $('<canvas>').attr('id', 'graph-' + i);
+      cardBody.append(graphCanvas);
+
+      card.append(cardBody);
+      itemCard.append(card);
+      resultsDiv.append(itemCard);
+    }
+  }
+
+  function generateGraphs(data) {
+    for (var i = 0; i < data.length; i++) {
+      var item = data[i];
+      var itemData = item.data;
+
+      var timeTakenValues = [];
+      var timeStampLabels = [];
+
+      for (var j = 0; j < itemData.length; j++) {
+        var timeTaken = itemData[j].timeTaken;
+        var timeStamp = itemData[j].timeStamp;
+
+        timeTakenValues.push(timeTaken);
+        timeStampLabels.push(timeStamp);
+      }
+
+      var canvasId = 'graph-' + i;
+      var ctx = document.getElementById(canvasId).getContext('2d');
+      var chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: timeStampLabels,
+          datasets: [{
+            label: 'Time Taken',
+            data: timeTakenValues,
+            backgroundColor: 'rgba(0, 123, 255, 0.2)',
+            borderColor: 'rgba(0, 123, 255, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              display: true,
+              title: {
+                display: true,
+                text: 'Time Stamp'
+              }
+            },
+            y: {
+              display: true,
+              title: {
+                display: true,
+                text: 'Time Taken'
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  $('#searchInput').on('input', function() {
+    var searchTerm = $(this).val().toLowerCase();
+    filterData(searchTerm);
+  });
+
+  function filterData(searchTerm) {
+    var resultsDiv = $('#results');
+    var cards = resultsDiv.find('.card-wrapper');
+
+    cards.hide();
+    cards.each(function() {
+      var cardText = $(this).text().toLowerCase();
+      if (cardText.includes(searchTerm)) {
+        $(this).show();
+      }
+    });
+
+    resultsDiv.removeClass('search-results');
+    if (searchTerm !== '') {
+      resultsDiv.addClass('search-results');
+    }
+  }
+
+  $('#sortSelect').change(function() {
+    sortData();
+  });
+
+  function sortData() {
+    var resultsDiv = $('#results');
+    var cards = resultsDiv.find('.card');
+
+    var property = $('#sortSelect').val();
+    var sortOrder = $('#toggleSortBtn').data('sortOrder');
+
+    let tmp = cards[0].outerText.split('\n');
+    let idx = tmp.findIndex((item) => item.includes(property));
+
+    cards.sort(function(a, b) {
+      var aValue = parseFloat(a.outerText.split('\n')[idx].split(':')[1].trim());
+      var bValue = parseFloat(b.outerText.split('\n')[idx].split(':')[1].trim());
+
+      if (sortOrder === 'asc') {
+        return aValue - bValue;
+      } else {
+        return bValue - aValue;
+      }
+    });
+
+    resultsDiv.empty().append(cards);
+  }
+
+  $('#toggleModeBtn').click(function() {
+    $('body').toggleClass('dark-mode');
+    $('.card').toggleClass('card-dark-mode');
+  });
+
+  $('#toggleSortBtn').click(function() {
+    var sortOrder = $(this).data('sortOrder');
+    if (sortOrder === 'asc') {
+      $(this).data('sortOrder', 'desc');
+      $(this).text('Toggle Sort Order (Descending)');
+    } else {
+      $(this).data('sortOrder', 'asc');
+      $(this).text('Toggle Sort Order (Ascending)');
+    }
+    sortData();
+  });
+</script>
+</body>
+</html>

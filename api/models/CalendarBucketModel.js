@@ -8,7 +8,7 @@ const Snowflake = require("../../Utils/snowflake").GenerateID;
   title: 'Testing Title',
   description: 'Event description
   authorID: '6784913793899053056',
-  calanderID: '6784916491973181440',
+  calendarID: '6784916491973181440',
 
   eventStart: timestamp
   eventEnd: timestamp
@@ -25,12 +25,12 @@ const Snowflake = require("../../Utils/snowflake").GenerateID;
   
 */
 const Schema = mongoose.Schema;
-const CalanderBucketSchema = new Schema({
+const CalendarBucketSchema = new Schema({
     id: { type: String, required: "Ned Bucket id fam." },
     title: { type: String, required: "Need title"},
     description: { type: String, required: "Need description"},
     authorID: { type: String, required: "authorID needed" },
-    calanderID: { type: String, required: "calendar id needed" },
+    calendarID: { type: String, required: "calendar id needed" },
 
     eventStart: { type: Date },
     eventEnd: { type: Date },
@@ -44,4 +44,4 @@ const CalanderBucketSchema = new Schema({
 
     createdDate: { type: Date, default: Date.now },
 });
-module.exports = mongoose.model("CalanderBucket", CalanderBucketSchema);
+module.exports = mongoose.model("CalendarBucket", CalendarBucketSchema);

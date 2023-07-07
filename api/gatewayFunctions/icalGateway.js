@@ -53,7 +53,7 @@ exports.getICals = async (req, res) => {
     // if ownerID is not provided, use memberID TODO: Should be privileged
     filter.ownerID = req.body.ownerID ? req.body.ownerID : memberID;
     req.body.url ? (filter.url = req.body.url) : null;
-    req.body.calanderID ? (filter.calanderID = req.body.calanderID) : null;
+    req.body.calendarID ? (filter.calendarID = req.body.calendarID) : null;
 
     let icalArray = await icalFunctions.getIcals(filter).catch((err) => {
         console.log("ERR: ", err);

@@ -1,7 +1,7 @@
 "use strict";
 const mongoose = require("mongoose");
 
-const CBucket = mongoose.connection.model("CalanderBucket");
+const CBucket = mongoose.connection.model("CalendarBucket");
 const Members = mongoose.connection.model("Members");
 
 const memberFunctions = require("../../Utils/functions/memberFunctions");
@@ -85,7 +85,7 @@ exports.createNewCalendar = async (req, res) => {
   let colour = req.body.colour;
 
   let response = await memberFunctions
-    .createNewCalander(memberID, name, colour, true)
+    .createNewCalendar(memberID, name, colour, true)
     .catch((err) => {
       console.log("ERR: ", err);
       res.status(codes.Bad_Request);
@@ -101,7 +101,7 @@ exports.createNewCalendar = async (req, res) => {
   } else {
     res.status(codes.Ok);
   }
-  res.json({ response: { id: response.calanderID } });
+  res.json({ response: { id: response.calendarID } });
 
   let duration = new Date().getTime() - startTimestamp;
   let ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
@@ -110,21 +110,21 @@ exports.createNewCalendar = async (req, res) => {
   monitoring.log("createNewCalendar - gateway", duration);
 };
 
-exports.deleteCalander = async (req, res) => {
+exports.deleteCalendar = async (req, res) => {
   let startTimestamp = new Date().getTime();
 
   let memberID = req.params.MemberID;
-  let calanderID = req.body.CalanderID;
+  let calendarID = req.body.CalendarID;
 
   // TODO: This doesnt sync with the websockets
-  // Create a separate thread to delete the calanders events.
-  l.verbose(`Deleting events for calander ${calanderID}`);
-  CBucket.deleteMany({ calanderID: `${calanderID}` }).catch((error) => {
-    logging.log(err, "ERROR", "deleteEvents by calanderID - " + calanderID);
+  // Create a separate thread to delete the calendars events.
+  l.verbose(`Deleting events for calendar ${calendarID}`);
+  CBucket.deleteMany({ calendarID: `${calendarID}` }).catch((error) => {
+    logging.log(err, "ERROR", "deleteEvents by calendarID - " + calendarID);
     throw "err";
   });
 
-  let response = await memberFunctions.deleteCalander(memberID, calanderID).catch((err) => {
+  let response = await memberFunctions.deleteCalendar(memberID, calendarID).catch((err) => {
     console.log("ERR: ", err);
     res.status(codes.Bad_Request);
     return "err";
@@ -139,10 +139,10 @@ exports.deleteCalander = async (req, res) => {
 
   let duration = new Date().getTime() - startTimestamp;
   let ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-  l.log(`[ ${duration}ms ] - [ ${ip} ] - Delete calander`);
+  l.log(`[ ${duration}ms ] - [ ${ip} ] - Delete calendar`);
 
   monitoring.log(
-      "deleteCalander - gateway",
+      "deleteCalendar - gateway",
       new Date().getTime() - startTimestamp
   );
 };

@@ -26,9 +26,9 @@ const debugMemberFuncs = process.env.debug && true;
  * @param editable
  * @returns {string} status text. Ok/Failed/Already Exists
  */
-module.exports.createNewCalander = async (memberID, name, colour, editable) => {
+module.exports.createNewCalendar = async (memberID, name, colour, editable) => {
   if (debugMemberFuncs) {
-    l.debug(`Request to create new calander with : ${memberID} : ${name} : ${colour} : ${editable}`);
+    l.debug(`Request to create new calendar with : ${memberID} : ${name} : ${colour} : ${editable}`);
   }
 
   let calID = SnowflakeFnc();
@@ -40,7 +40,7 @@ module.exports.createNewCalander = async (memberID, name, colour, editable) => {
     return { status: "Member not found" };
   } doc = doc[0];
 
-  doc.calanders.push({
+  doc.calendars.push({
     id: calID,
     name: name,
     colour: colour,
@@ -48,7 +48,7 @@ module.exports.createNewCalander = async (memberID, name, colour, editable) => {
   });
 
   websockets.send_message(memberID, {
-    type: "new_calander",
+    type: "new_calendar",
     data: {
         id: calID,
         name: name,
@@ -66,18 +66,18 @@ module.exports.createNewCalander = async (memberID, name, colour, editable) => {
   if (debugMemberFuncs)
     l.debug("New calendar created with id: " + calID);
 
-  return { calanderID: calID };
+  return { calendarID: calID };
 }
 
 /**
  * Delete a calendar based off the member id and calendar id.
  * @param MemberID
- * @param CalanderID
+ * @param CalendarID
  * @returns {string} status text. Ok/Failed/Already Exists
  */
-module.exports.deleteCalander = async (MemberID, CalanderID) => {
+module.exports.deleteCalendar = async (MemberID, CalendarID) => {
   if (debugMemberFuncs) {
-    l.debug(`Request to delete a calendar with : ${MemberID} : ${CalanderID}`);
+    l.debug(`Request to delete a calendar with : ${MemberID} : ${CalendarID}`);
   }
 
   let doc = await Members.find({ id: MemberID }).clone().exec();
@@ -87,12 +87,12 @@ module.exports.deleteCalander = async (MemberID, CalanderID) => {
     return { status: "Member not found" };
   } doc = doc[0];
 
-  doc.calanders = doc.calanders.filter(function(e) { return e.id !== CalanderID })
+  doc.calendars = doc.calendars.filter(function(e) { return e.id !== CalendarID })
 
   websockets.send_message(MemberID, {
     type: "delete_calendar",
     data: {
-      id: CalanderID,
+      id: CalendarID,
     },
     at_time: Date.now(),
   });
@@ -103,7 +103,7 @@ module.exports.deleteCalander = async (MemberID, CalanderID) => {
     return { status: "Failed to save calendar" };
   }
   if (debugMemberFuncs)
-    l.debug("Calendar deleted with id: " + CalanderID);
+    l.debug("Calendar deleted with id: " + CalendarID);
 
   return { status: "Success" };
 };

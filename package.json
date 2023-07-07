@@ -1,5 +1,5 @@
 {
-  "name": "calander-api",
+  "name": "calendar-api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ConniBug/calander-api.git"
+    "url": "git+https://github.com/ConniBug/calendar-api.git"
   },
   "author": "Conni!~#4121",
   "license": "AGPL-3.0 ",
   "bugs": {
-    "url": "https://github.com/ConniBug/calander-api/issues"
+    "url": "https://github.com/ConniBug/calendar-api/issues"
   },
-  "homepage": "https://github.com/ConniBug/calander-api#readme",
+  "homepage": "https://github.com/ConniBug/calendar-api#readme",
   "dependencies": {
     "@connibug/js-logging": "^2.0.1",
     "atatus-nodejs": "^1.6.3",

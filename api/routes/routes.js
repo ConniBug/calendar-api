@@ -45,9 +45,9 @@ module.exports = (app) => {
     .put(authWrapper, memberGateway.updateMember)
     .delete(authWrapper, memberGateway.deleteMember);
   app
-    .route("/api/:MemberID/calander")
+    .route("/api/:MemberID/calendar")
     .post(authWrapper, memberGateway.createNewCalendar)
-    .delete(authWrapper, memberGateway.deleteCalander);
+    .delete(authWrapper, memberGateway.deleteCalendar);
   //#endregion
 
   /**
@@ -56,12 +56,12 @@ module.exports = (app) => {
    *
    */
   app
-      .route("/api/:MemberID/events/:CalanderID")
+      .route("/api/:MemberID/events/:CalendarID")
       .post(authWrapper, eventGateway.createNewEvent)
       .get(authWrapper, eventGateway.getEvents);
 
   app
-      .route("/api/:MemberID/events/:CalanderID/:EventID")
+      .route("/api/:MemberID/events/:CalendarID/:EventID")
       .put(authWrapper, eventGateway.updateEvent)
       .delete(authWrapper, eventGateway.deleteEvent);
   //#endregion
@@ -100,6 +100,12 @@ module.exports = (app) => {
   //#region Testing stuff
 
   app.route("/api/test/1").post(testingGateway.test1);
+
+
+  app.get('/api/settings/front', function(req, res) {
+    console.log(__dirname);
+    res.sendFile(path.join(__dirname, '../../settings.html'));
+  });
 
   //#endregion
 };
