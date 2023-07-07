@@ -93,3 +93,15 @@ module.exports.createNewIcal = async (memberID, url) => {
     }
     return { id: icalID };
 }
+
+module.exports.getIcals = async (filter) => {
+    return a = await ical.find(filter);
+}
+
+module.exports.deleteIcal = async (memberID, icalID) => {
+    let response = await ical.deleteOne({id: icalID, ownerID: memberID});
+    if(response.deletedCount <= 0) {
+        return { error: "Failed to delete ical record" };
+    }
+    return { status: "OK" };
+}

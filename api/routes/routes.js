@@ -77,9 +77,8 @@ module.exports = (app) => {
       .post(authWrapper, icalGateway.createNewIcal);
 
   app
-      .route("/api/:MemberID/ical/:IcalID");
-      // .get(authWrapper, icalGateway.getICal)
-      // .delete(authWrapper, icalGateway.deleteIcal);
+      .route("/api/:MemberID/ical/:iCalID")
+       .delete(authWrapper, icalGateway.deleteIcal);
 
   /**
    * Monitoring API

@@ -73,3 +73,28 @@ exports.getICals = async (req, res) => {
         duration
     );
 }
+
+exports.deleteIcal = async (req, res) => {
+    let startTimestamp = new Date().getTime();
+
+    let memberID = req.params.MemberID;
+    let iCalID = req.params.iCalID;
+
+    let icalArray = await icalFunctions.deleteIcal(memberID, iCalID).catch((err) => {
+        console.log("ERR: ", err);
+
+        res.status(codes.Bad_Request);
+        res.send("err");
+    });
+    res.status(codes.Ok);
+    res.json(icalArray);
+
+    let duration = new Date().getTime() - startTimestamp;
+    let ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+    l.log(`[ ${duration}ms ] - [ ${ip} ] - Delete ical`);
+
+    monitoring.log(
+        "deleteIcal - gateway",
+        duration
+    );
+}
