@@ -1,35 +1,31 @@
-// Setup environment
-require("dotenv").config();
-process.env.debug = process.env.debug === "True" ? "true" : "false";
-
-const port = process.env.PORT || 3000;
-
-// Setup MongoDB
-const mongoose = require("mongoose");
-mongoose.set('strictQuery', true);
-mongoose.connect(process.env.mongodb_main, function(err) {
-  if (err)
-    console.error(err);
-});
-
-// Load MongoDB Models
-require("./api/models/MemberModel");
-require("./api/models/CalanderBucketModel");
-require("./api/models/IcalModel");
-
-const monitoring = require("./Utils/monitor");
-const hashing = require("./Utils/hashing");
-
-const ical = require("./Utils/functions/icalFunctions");
-
-const path = require("path");
 const l = require("@connibug/js-logging");
 l.setupFileLogging("./");
-const express = require("express");
-var cors = require('cors');
 
+// Setup environment
+require("dotenv").config();
+const port = process.env.PORT || 3000;
+process.env.debug = process.env.debug === "True" ? "true" : "false";
+
+// Setup Atatus
+let atatus = require("atatus-nodejs");
+atatus.start({
+  licenseKey: process.env.ATATUS_LICENSE_KEY,
+  appName: process.env.ATATUS_APP_NAME,
+});
+
+// Setup utils
+const mongoose = require("./Utils/mongo_setup");
+require("./Utils/monitor");
+require("./Utils/hashing");
+
+const fs = require('fs');
+
+const express= require("express");
 const websockets = require("./services/web-sockets");
+const https = require('https');
+const http = require('http');
 
+let cors = require('cors');
 const allowlist = ['http://100.110.174.208:30000', 'https://cal.transgirl.space']
 let corsOptionsDelegate = function (req, callback) {
   let corsOptions = {};
@@ -52,10 +48,6 @@ let corsOptionsDelegate = function (req, callback) {
 }
 
 const app = express();
-
-if(!process.env.SALT_ROUNDS)
-  hashing.setup();
-// monitoring.output();
 
 async function start() {
   l.log("--------------------------------------------------");
@@ -85,7 +77,6 @@ async function start() {
   l.verbose("Defined models " + tmp);
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
-
   app.use(cors(corsOptionsDelegate));
 
   const routes = require("./api/routes/routes");
@@ -96,8 +87,19 @@ async function start() {
     res.status(404).send({ url: req.originalUrl + " not found" });
   });
 
-  app.listen(port);
-  l.log("Server RESTful API server started on: " + port);
+  const httpServer = http.createServer(app);
+  const httpsServer = https.createServer({
+    key: fs.readFileSync(process.env.SSL_KEY_PATH),
+    cert: fs.readFileSync(process.env.SSL_CERT_PATH),
+  }, app);
+
+  httpServer.listen(port, () => {
+    l.log("API HTTP Server running on port " + port);
+  });
+  httpsServer.listen(443, () => {
+    l.log("API HTTPS Server running on port 443");
+  });
+
 }
 
 async function stop() {

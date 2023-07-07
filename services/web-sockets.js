@@ -1,12 +1,17 @@
 const l = require("@connibug/js-logging");
 const WebSocketServer = require('websocket').server;
-const http = require('http');
+const https = require('https');
 
 const heartbeat_interval = 30000; // 30 seconds
 
 const isTokenValid = require("../api/proxys/authProxy.js").isTokenValid;
 
-const server = http.createServer(function(request, response) {
+const fs = require('fs');
+const server = https.createServer({
+    key: fs.readFileSync(process.env.SSL_KEY_PATH),
+    cert: fs.readFileSync(process.env.SSL_CERT_PATH),
+
+}, function(request, response) {
     l.log(' Received request for ' + request.url);
     response.writeHead(404);
     response.end();
@@ -22,7 +27,7 @@ wsServer = new WebSocketServer({
 });
 
 function originIsAllowed(origin) {
-    let allowedOrigins = [ "http://100.110.174.208:30000" ];
+    let allowedOrigins = [ "https://100.110.174.208:30000" ];
     return allowedOrigins.includes(origin);
 }
 

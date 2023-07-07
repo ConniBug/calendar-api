@@ -1,12 +1,12 @@
 const monitor = require("./monitor");
 const bcrypt = require("bcrypt");
 
-var saltRounds = 8;
+let saltRounds = 8;
 
 /**
  * Used for benchmarking hasing speeds
- * @param {Integer} saltRounds
  * @returns
+ * @param saltRounds_t
  */
 function hashTiming(saltRounds_t) {
   let startTimestamp = new Date().getTime();
@@ -20,19 +20,23 @@ function hashTiming(saltRounds_t) {
   return new Date().getTime() - startTimestamp;
 }
 
+if(!process.env.SALT_ROUNDS)
+  module.exports.setup();
+
 module.exports.setup = () => {
-  var timeTaken = -1;
 
-  var maxTimeAllowed = 1000;
-  var leaway = 150;
+  let timeTaken = -1;
 
-  var bestRounds = -1;
-  var bestTiming = -1;
+  let maxTimeAllowed = 1000;
+  let leaway = 150;
 
-  for (var curSalt = 1; curSalt <= 1000; ++curSalt) {
-    var test1 = hashTiming(curSalt);
-    var test2 = hashTiming(curSalt);
-    var test3 = hashTiming(curSalt);
+  let bestRounds = -1;
+  let bestTiming = -1;
+
+  for (let curSalt = 1; curSalt <= 1000; ++curSalt) {
+    let test1 = hashTiming(curSalt);
+    let test2 = hashTiming(curSalt);
+    let test3 = hashTiming(curSalt);
 
     timeTaken = test1 + test2 + test3;
     timeTaken /= 3;
