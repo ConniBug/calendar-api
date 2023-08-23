@@ -13,6 +13,9 @@ const websockets = require("../../services/web-sockets");
  * @returns {string} Status text.
  */
 module.exports.updateEvent = async (memberID, eventID, update) => {
+  if(update.calendarID)
+    update.category = update.calendarID;
+
   websockets.send_message(memberID, {
     type: "update_event",
     data: {
