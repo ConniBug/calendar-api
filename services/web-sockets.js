@@ -60,7 +60,7 @@ wsServer.on('request', function(request) {
         }
     }));
 
-    connection.on('message', function(message_raw) {
+    connection.on('message', async function(message_raw) {
         let message;
         if (message_raw.type === 'utf8') {
             message = JSON.parse(message_raw.utf8Data);
@@ -118,7 +118,7 @@ function send(connection, message) {
         clearInterval(this);
     }, 1000);
 }
-function handle_message(connection, message) {
+async function handle_message(connection, message) {
     if(!connection.user && message.type !== 'auth') {
         l.debug('User not authenticated', "websocket");
         send(connection,{ type: "auth", status: "failed" });
@@ -129,7 +129,8 @@ function handle_message(connection, message) {
 
     switch(message.type) {
         case 'auth':
-            if(!isTokenValid(message.id, message.token)) {
+            let valid = await isTokenValid(message.id, message.token);
+            if(!valid) {
                 send(connection,{ type: "auth", status: "failed" });
                 connection.close();
                 return;

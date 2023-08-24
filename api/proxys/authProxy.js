@@ -58,7 +58,7 @@ module.exports.authWrapper = async (req, res, next) => {
   }
   const submittedToken = req.headers.authorization.split(" ")[1];
 
-  var valid = await isTokenValid(req.params.MemberID, submittedToken);
+  let valid = await isTokenValid(req.params.MemberID, submittedToken);
   var timeTaken = new Date().getTime() - startTimestamp;
 
   if (!valid) {
