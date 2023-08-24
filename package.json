@@ -19,7 +19,6 @@
   "homepage": "https://github.com/ConniBug/calendar-api#readme",
   "dependencies": {
     "@connibug/js-logging": "^2.0.1",
-    "atatus-nodejs": "^1.6.3",
     "bcrypt": "^5.0.1",
     "colors": "^1.4.0",
     "cors": "^2.8.5",

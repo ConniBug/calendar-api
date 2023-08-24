@@ -7,11 +7,11 @@ const port = process.env.PORT || 3000;
 process.env.debug = process.env.debug === "True" ? "true" : "false";
 
 // Setup Atatus
-let atatus = require("atatus-nodejs");
-atatus.start({
-  licenseKey: process.env.ATATUS_LICENSE_KEY,
-  appName: process.env.ATATUS_APP_NAME,
-});
+// let atatus = require("atatus-nodejs");
+// atatus.start({
+//   licenseKey: process.env.ATATUS_LICENSE_KEY,
+//   appName: process.env.ATATUS_APP_NAME,
+// });
 
 // Setup utils
 const mongoose = require("./Utils/mongo_setup");

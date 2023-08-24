@@ -132,7 +132,11 @@ async function handle_message(connection, message) {
             let valid = await isTokenValid(message.id, message.token);
             if(!valid) {
                 send(connection,{ type: "auth", status: "failed" });
-                connection.close();
+                setTimeout(() => {
+                    connection.close();
+                }, 250); // TODO: Maybe consider the users ping
+
+
                 return;
             }
             send(connection, { type: "auth", status: "success" });
