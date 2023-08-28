@@ -31,9 +31,9 @@ const allowlist = [
   "https://100.110.174.208:30000", "http://100.110.174.208:30000",
   "https://localhost:30000", "http://localhost:30000",
   "https://localhost", "http://localhost",
-    "http://localhost:8080", "http://localhost:8080/",
+    "http://localhost:8080", "http://localhost:8080",
     "https://conni.lgbt", "http://conni.lgbt",
-    "http://transgirl.space/", "https://transgirl.space/"
+    "http://transgirl.space", "https://transgirl.space"
 ];let corsOptionsDelegate = function (req, callback) {
   let corsOptions = {};
   // console.log(req.header('Origin'));
