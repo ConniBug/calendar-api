@@ -13,6 +13,8 @@ module.exports = (app) => {
 
   const monitoringUtils = require("./../../Utils/monitor");
 
+  require("dotenv").config();
+
   /**
    *  Un-Authenticated Routes
    */
@@ -92,6 +94,33 @@ module.exports = (app) => {
     res.sendFile(path.join(__dirname, '../../ana.html'));
   });
 
+  //#endregion
+
+  //#region Notification API
+
+  app.route("/api/analysis/report").post(function (req, res) {
+    console.log("New Report");
+    console.log(req.body);
+    console.log(req.params);
+    res.send({status: "OK"});
+  });
+  //#endregion
+
+  // #region Last FM Current Song API
+  const request = require('request');
+  app.route("/api/lastfm/current/:user").get(function (req, res) {
+    const options = {
+      'method': 'GET',
+      'url': `http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${req.params.user}&api_key=${process.env.LASTFM_APIKEY}&format=json`,
+      'headers': {
+      }
+    };
+    request(options, function (error, response) {
+      if (error)
+        throw new Error(error);
+      res.send(response.body);
+    });
+  });
   //#endregion
 
   /**
