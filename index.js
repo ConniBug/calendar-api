@@ -27,6 +27,7 @@ const http = require('http');
 
 let cors = require('cors');
 const allowlist = [
+    "https://kota.gay", "http://kota.gay",
   "https://cal.transgirl.space", "http://cal.transgirl.space",
   "https://100.110.174.208:30000", "http://100.110.174.208:30000",
   "https://localhost:30000", "http://localhost:30000",
