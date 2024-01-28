@@ -9,7 +9,7 @@ module.exports = (app) => {
   const eventGateway = require("../gatewayFunctions/eventGateway.js");
   const icalGateway = require("../gatewayFunctions/icalGateway.js");
 
-  const authWrapper = require("../proxys/authProxy").authWrapper;
+  const authWrapper = require("../proxys/auth");
 
   const monitoringUtils = require("./../../Utils/monitor");
 
