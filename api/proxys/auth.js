@@ -58,6 +58,7 @@ async function auth(req, res, next) {
             decoded = await jwt.verify(token, signingKey);
         } catch (err) {
             console.log(err);
+            console.log(token);
             return unauthorized(res, "invalid token");
         }
     } else {
