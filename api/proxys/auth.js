@@ -46,10 +46,12 @@ async function auth(req, res, next) {
 
         try {
             const decodedToken = jwt.decode(token, {complete: true});
+            console.log(decodedToken);
 
             if (decodedToken === null || decodedToken.header.alg !== 'RS256') {
                 // we are only supporting RS256 so fail if this happens.
-                return unauthorized(res, "invalid token");
+                console.log(token);
+                return unauthorized(res, "invalid token 0x01");
             }
 
             const kid = decodedToken.header.kid;
@@ -59,7 +61,7 @@ async function auth(req, res, next) {
         } catch (err) {
             console.log(err);
             console.log(token);
-            return unauthorized(res, "invalid token");
+            return unauthorized(res, "invalid token 0x10");
         }
     } else {
         let user = JSON.parse(headers.user);
